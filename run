@@ -1,0 +1,8 @@
+#!/bin/bash
+
+trap 'kill $(jobs -p)' EXIT
+
+cd src || return
+
+java elevator.Elevator &
+java scheduler.Scheduler
