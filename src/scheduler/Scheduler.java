@@ -5,7 +5,6 @@ import java.net.*;
 import java.util.Arrays;
 
 public class Scheduler {
-  DatagramPacket sendPacket, receivePacket;
   DatagramSocket sendAndReceive, receiveSocket;
 
   public Scheduler() {
@@ -28,8 +27,8 @@ public class Scheduler {
     }
   }
 
-  public void receive(byte[] data, DatagramSocket socket) {
-    receivePacket = new DatagramPacket(data, data.length);
+  public DatagramPacket receive(byte[] data, DatagramSocket socket) {
+    DatagramPacket receivePacket = new DatagramPacket(data, data.length);
     System.out.println("Scheduler: Waiting for Packet.\n");
 
     // Block until a datagram packet is received from receiveSocket.
@@ -41,9 +40,11 @@ public class Scheduler {
       e.printStackTrace();
       System.exit(1);
     }
+
+    return receivePacket;
   }
 
-  public void send() {
+  public void send(DatagramPacket sendPacket) {
     System.out.println("Scheduler: Sending packet:");
     int len = sendPacket.getLength();
     String str  = new String(sendPacket.getData(), 0, len);
@@ -59,12 +60,13 @@ public class Scheduler {
 
   public void receiveAndForward() {
     byte data[] = new byte[100];
-    receive(data, receiveSocket);
+    DatagramPacket receivePacket = receive(data, receiveSocket);
 
     InetAddress originAddress = receivePacket.getAddress();
     int originPort = receivePacket.getPort();
 
     // create new data packet but change the address to the server
+    DatagramPacket sendPacket = null;
     try {
       sendPacket = new DatagramPacket(data, receivePacket.getLength(), InetAddress.getLocalHost(), 4000);
     } catch (UnknownHostException e) {
@@ -73,14 +75,14 @@ public class Scheduler {
     }
 
     // forward
-    send();
+    send(sendPacket);
 
     // get upstream response
     data = new byte[100];
     receive(data, sendAndReceive);
 
     sendPacket = new DatagramPacket(data, receivePacket.getLength(), originAddress, originPort);
-    send();
+    send(sendPacket);
   }
 
   public void close() {
