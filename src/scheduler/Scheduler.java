@@ -79,7 +79,6 @@ public class Scheduler {
     data = new byte[100];
     receive(data, sendAndReceive);
 
-    System.out.println("Sending it back");
     sendPacket = new DatagramPacket(data, receivePacket.getLength(), originAddress, originPort);
     send();
   }
