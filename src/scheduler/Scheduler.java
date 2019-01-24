@@ -99,6 +99,7 @@ public class Scheduler {
   }
 
   public static void main(String args[]) {
+    System.out.println("Scheduler: Starting on port 3000");
     Scheduler proxy = new Scheduler();
     proxy.run();
   }

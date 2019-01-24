@@ -85,6 +85,7 @@ public class Elevator {
   }
 
   public static void main(String args[]) {
+    System.out.println("Elevator: Starting on port 4000");
     Elevator s = new Elevator();
     s.run();
   }
