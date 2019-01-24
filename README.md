@@ -7,3 +7,5 @@ Kirin Rastogi 101003372
 Vikram Bombhi 101007498
 
 Jacky Chiu 101001982
+
+Connor Poland 101013229
