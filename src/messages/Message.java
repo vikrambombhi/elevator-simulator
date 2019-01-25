@@ -2,8 +2,11 @@ package messages;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 
 public interface Message {
 	// When receiving a message, deserialize it with this, and cast it using
@@ -31,5 +34,27 @@ public interface Message {
 			e.printStackTrace();
 		}
 		return out.toByteArray();
+	}
+
+	public static void send(DatagramSocket sock, DatagramPacket pack) {
+		try {
+			sock.send(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
+	public static DatagramPacket receive(DatagramSocket sock, byte[] data) {
+		DatagramPacket pack = new DatagramPacket(data, data.length);
+
+		// Block until a datagram packet is received from receiveSocket.
+		try {
+			sock.receive(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return pack;
 	}
 }
