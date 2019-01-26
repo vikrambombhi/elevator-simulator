@@ -32,7 +32,7 @@ public class Floor {
 	
 	public DatagramPacket receive(byte[] data, DatagramSocket socket) {
 	    DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-	    System.out.println("Scheduler: Waiting for Packet.\n");
+	    System.out.println("Floor: Waiting for Packet.\n");
 
 	    // Block until a datagram packet is received from receiveSocket.
 	    try {
@@ -48,7 +48,7 @@ public class Floor {
 	  }
 
 	  public void send(DatagramPacket sendPacket) {
-	    System.out.println("Scheduler: Sending packet:");
+	    System.out.println("Floor: Sending packet:");
 	    int len = sendPacket.getLength();
 	    String str  = new String(sendPacket.getData(), 0, len);
 
