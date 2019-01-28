@@ -1,4 +1,4 @@
-make: run
+make: build
 
 run: build
 	./run
