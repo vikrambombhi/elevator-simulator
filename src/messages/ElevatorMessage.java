@@ -6,7 +6,7 @@ public class ElevatorMessage implements Message, Serializable {
 
     private static final long serialVersionUID = -2950505368297636750L;
 
-    enum MessageType {
+    public enum MessageType {
         STOP, GOUP, GODOWN, OPENDOOR, CLOSEDOOR;
     }
 
