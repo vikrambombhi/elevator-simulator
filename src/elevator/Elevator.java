@@ -20,7 +20,7 @@ public class Elevator {
 
     private State state;
 
-    // Simulates the physical attached with the elevator.
+    // Simulates the physical components attached to the elevator.
     private Motor motor;
     private Door door;
 
@@ -75,9 +75,8 @@ public class Elevator {
         if (m instanceof ElevatorMessage) {
             // scheduler tells the elevator to move, stop, open or close.
             handleElevatorMessage((ElevatorMessage) m);
-            // } else if (m instanceof FloorMessage) {
-            //     reroute the message to the schduler
-            }
+        }
+        // TODO: handle elevator floor being requested and routed to the scheduler
     }
 
     /*
