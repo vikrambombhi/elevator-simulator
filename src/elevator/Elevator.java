@@ -4,91 +4,122 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import messages.*;
 
+/*
+ * Elevator is the subsystem placed in each elevator.
+ */
 public class Elevator {
-	// SimpleEchoElevator.java
-	// This class is the server side of a simple echo server based on
-	// UDP/IP. The server receives from a client a packet containing a character
-	// string, then echoes the string back to the client.
-	// Last edited January 9th, 2016
+    // State is the possible states that the elevator can be in.
+    enum State {
+        MOVING_UP,
+        MOVING_DOWN,
+        STOPPED_DOORS_CLOSED,
+        STOPPED_DOORS_OPENED
+    }
 
-	DatagramSocket sendSocket, receiveSocket;
+    State state;
 
-	public Elevator() {
-		try {
-			// Construct a datagram socket and bind it to any available
-			// port on the local host machine. This socket will be used to
-			// send UDP Datagram packets.
-			sendSocket = new DatagramSocket();
+    // Simulates the physical attached with the elevator.
+    Motor motor;
+    Door door;
 
-			// Construct a datagram socket and bind it to port 5000
-			// on the local host machine. This socket will be used to
-			// receive UDP Datagram packets.
-			receiveSocket = new DatagramSocket(4000);
+    // Communication sockets
+    DatagramSocket sendSocket, receiveSocket;
 
-			// to test socket timeout (2 seconds)
-			// receiveSocket.setSoTimeout(2000);
-		} catch (SocketException se) {
-			se.printStackTrace();
-			System.exit(1);
-		}
-	}
+    public Elevator() {
+        state = State.STOPPED_DOORS_CLOSED;
+        motor = new Motor();
+        door = new Door();
 
-	private DatagramPacket receive(byte[] data) {
-		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-		System.out.println("Elevator: Waiting for Packet.\n");
+        try {
+            sendSocket = new DatagramSocket();
+            receiveSocket = new DatagramSocket(4000);
+        } catch (SocketException se) {
+            se.printStackTrace();
+            System.exit(1);
+        }
+    }
 
-		// Block until a datagram packet is received from receiveSocket.
-		try {
-			receiveSocket.receive(receivePacket);
-		} catch (IOException e) {
-			System.out.print("IO Exception: likely:");
-			System.out.println("Receive Socket Timed Out.\n" + e);
-			e.printStackTrace();
-			System.exit(1);
-		}
-		return receivePacket;
-	}
+    /*
+     * run starts the elevator subsystem and awaits for messages.
+     */
+    public void run() {
+        try {
+            while (true) {
+                byte data[] = new byte[100];
+                DatagramPacket receivePacket = Message.receive(receiveSocket, data);
+                Message m = Message.deserialize(receivePacket.getData());
+                handleMessage(m);
+            }
+        } catch (Exception e) {
+            System.out.println("Elevator quiting.");
+            e.printStackTrace();
+            close();
+        }
+    }
 
-	private void send(DatagramPacket sendPacket) {
-		System.out.println("Elevator: Sending packet:");
+    /*
+     * close closes the communication sockets of the elevator subsystem.
+     */
+    public void close() {
+        sendSocket.close();
+        receiveSocket.close();
+    }
 
-		// Send the datagram packet to the client via the send socket.
-		try {
-			sendSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
+    /*
+     * handleMessage runs the corresponding action for the message type.
+     */
+    private void handleMessage(Message m) {
+        // State machine switch
+        if (m instanceof ElevatorMessage) {
+            // scheduler tells the elevator to move, stop, open or close.
+            handleElevatorMessage((ElevatorMessage) m);
+            // } else if (m instanceof FloorMessage) {
+            //     reroute the message to the schduler
+            }
+    }
 
-	public void run() {
-		try {
-			while (true) {
-				byte data[] = new byte[100];
-				DatagramPacket receivePacket = receive(data);
+    /*
+     * handleElevatorMessage handles commands for the elevator's physical components.
+     */
+    private void handleElevatorMessage(ElevatorMessage m) {
+        switch (m.getMessageType()) {
+            case STOP:
+                assert(state == State.MOVING_UP || state == State.MOVING_DOWN);
+                motor.stop();
+                state = State.STOPPED_DOORS_CLOSED;
+                break;
 
-				DatagramPacket sendPacket = new DatagramPacket(data,
-						data.length, receivePacket.getAddress(),
-						receivePacket.getPort());
+            case GOUP:
+                assert(state == State.STOPPED_DOORS_CLOSED);
+                motor.move(Motor.Direction.UP);
+                state = State.MOVING_UP;
+                break;
 
-				send(sendPacket);
-			}
-		} catch (Exception e) {
-			System.out.println("Elevator quiting.");
-			e.printStackTrace();
-			close();
-		}
-	}
+            case GODOWN:
+                assert(state == State.STOPPED_DOORS_CLOSED);
+                motor.move(Motor.Direction.DOWN);
+                state = State.MOVING_DOWN;
+                break;
 
-	public void close() {
-		sendSocket.close();
-		receiveSocket.close();
-	}
+            case OPENDOOR:
+                assert(state == State.STOPPED_DOORS_CLOSED);
+                door.open();
+                state = State.STOPPED_DOORS_OPENED;
+                break;
 
-	public static void main(String args[]) {
-		System.out.println("Elevator: Starting on port 4000");
-		Elevator s = new Elevator();
-		s.run();
-	}
+            case CLOSEDOOR:
+                assert(state == State.STOPPED_DOORS_OPENED);
+                door.close();
+                state = State.STOPPED_DOORS_CLOSED;
+                break;
+        }
+    }
+
+    public static void main(String args[]) {
+        System.out.println("Elevator: Starting on port 4000");
+        Elevator e = new Elevator();
+        e.run();
+    }
 }
