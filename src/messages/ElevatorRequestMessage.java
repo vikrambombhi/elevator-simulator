@@ -2,6 +2,7 @@ package messages;
 
 import java.io.Serializable;
 
+// request an elevator when you press an up or down button
 public class ElevatorRequestMessage implements Message, Serializable {
 
 	/**
