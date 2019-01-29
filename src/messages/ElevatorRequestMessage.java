@@ -14,24 +14,45 @@ public class ElevatorRequestMessage implements Message, Serializable {
 	}
 
 	private Direction direction;
-	private int floor;
+	private int destinationFloor;
+    private int originFloor;
 
-	public ElevatorRequestMessage() {
+	public ElevatorRequestMessage() {}
+
+	public ElevatorRequestMessage(Direction direction, int destinationFloor, int originFloor) {
+        this.direction = direction;
+        this.destinationFloor = destinationFloor;
+        this.originFloor = originFloor;
+    }
+
+	/**
+	 * @return the destinationFloor
+	 */
+	public int getDesitationFloor() {
+		return destinationFloor;
 	}
 
 	/**
-	 * @return the floor
+	 * @param destinationFloor
+	 *            the destinationFloor to set
 	 */
-	public int getFloor() {
-		return floor;
+	public void setDestinationFloor(int destinationFloor) {
+		this.destinationFloor = destinationFloor;
 	}
 
 	/**
-	 * @param floor
-	 *            the floor to set
+	 * @return the originFloor
 	 */
-	public void setFloor(int floor) {
-		this.floor = floor;
+	public int getOriginFloor() {
+		return originFloor;
+	}
+
+	/**
+	 * @param originFloor
+	 *            the originFloor to set
+	 */
+	public void setOriginFloor(int originFloor) {
+		this.originFloor = originFloor;
 	}
 
 	/**
