@@ -1,13 +1,19 @@
 package scheduler;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 import messages.ArrivalMessage;
+import messages.ElevatorMessage;
+import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
+import elevator.Elevator;
 
 public class Scheduler {
 	private DatagramSocket sock;
@@ -43,21 +49,42 @@ public class Scheduler {
 			queue.add(frm.getFloor());
 		} else if (m instanceof ArrivalMessage) {
 			// this means that an elevator arrived at a floor, tell it what to
-			// do next
+			// do next. Either open doors, or go up or down
 			ArrivalMessage am = (ArrivalMessage) m;
 			// tell the elevator where to go based on the queue
 
 			// if am floor is queue.peek(), dequeue
-			int current = queue.peek();
-			if (current == am.getFloor()) {
+			int dest = queue.peek();
+			int current = am.getFloor();
+			if (current == dest) {
 				queue.remove();
+				sendToElevator(MessageType.OPENDOOR);
+				return;
 			}
-			current = queue.peek();
+			// dest is now latest on queue
+			MessageType direction = MessageType.GOUP;
+			if (current - dest > 0) {
+				direction = MessageType.GODOWN;
+			}
 
 			// create a new ElevatorMessage, and send it to the elevator
 			// based on what floor it should go to next
+			sendToElevator(direction);
 		}
 
+	}
+
+	private void sendToElevator(MessageType action) {
+		byte[] data = Message.serialize((new ElevatorMessage(action)));
+		InetAddress destHost = null;
+		try {
+			destHost = InetAddress.getByName(Elevator.HOST);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		DatagramPacket pack = new DatagramPacket(data, data.length, destHost, Elevator.PORT);
+		Message.send(sock, pack);
 	}
 
 	public void close() {
