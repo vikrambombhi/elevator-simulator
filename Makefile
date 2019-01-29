@@ -15,6 +15,12 @@ scheduler:
 	javac scheduler/*.java
 	java scheduler.Scheduler
 
+.ONESHELL:
+floor:
+	cd src/
+	javac floor/*.java
+	java floor.Floor
+
 build:
 	javac src/**/*.java
 
