@@ -30,7 +30,7 @@ switch (m) {
   if (m instanceof ElevatorMessage) {
     // handle the elevator message
   } else {
-    // drop it, something sent you a badly formatted message
+    // drop it, something sent you a message you don't handle
   }
 }
 ```
