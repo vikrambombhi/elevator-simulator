@@ -3,7 +3,7 @@ package elevator;
 class Door {
   public enum Position { OPENED, CLOSED };
 
-  Position position;
+  private Position position;
 
   Door() {
     position = Position.CLOSED;

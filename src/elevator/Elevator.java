@@ -18,14 +18,14 @@ public class Elevator {
         STOPPED_DOORS_OPENED
     }
 
-    State state;
+    private State state;
 
     // Simulates the physical attached with the elevator.
-    Motor motor;
-    Door door;
+    private Motor motor;
+    private Door door;
 
     // Communication sockets
-    DatagramSocket sendSocket, receiveSocket;
+    private DatagramSocket sendSocket, receiveSocket;
 
     public Elevator() {
         state = State.STOPPED_DOORS_CLOSED;

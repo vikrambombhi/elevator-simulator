@@ -3,7 +3,7 @@ package elevator;
 class Motor {
   public enum Direction { UP, DOWN, STOPPED };
 
-  Direction state;
+  private Direction state;
 
   Motor() {
     state = Direction.STOPPED;
