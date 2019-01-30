@@ -9,7 +9,7 @@ import java.util.*;
 public class File {
     public File() {}
 
-	public ArrayList<messages.ElevatorRequestMessage> readFile(String filename) {
+    public ArrayList<messages.ElevatorRequestMessage> readFile(String filename) {
         ArrayList<messages.ElevatorRequestMessage> messages = new ArrayList<messages.ElevatorRequestMessage>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -27,5 +27,5 @@ public class File {
             e.printStackTrace();
         }
         return messages;
-	}
+    }
 }
