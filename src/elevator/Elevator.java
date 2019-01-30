@@ -113,6 +113,9 @@ public class Elevator {
                 door.close();
                 state = State.STOPPED_DOORS_CLOSED;
                 break;
+            default:
+                System.out.println("Elevator: ElevatorMessage type case not handled: " + m.getMessageType());
+                System.exit(1);
         }
     }
 
