@@ -14,7 +14,7 @@ import messages.ElevatorRequestMessage.Direction;
 import java.util.List;
 import java.util.Stack;
 
-public class FloorSubsystem {
+public class FloorSubsystem implements Runnable {
 	
 	DatagramSocket receiveSocket;
 	
@@ -67,12 +67,15 @@ public class FloorSubsystem {
 		goingDown = new Stack<Integer>();
 		
 		requestSimulator = new Thread(new RequestSimulator(floorNum));
-		System.out.println("Floor "+num+": Started");
-		requestSimulator.start();
-		listenAndDispatch();
+		System.out.println("Floor "+num+": Ready");
+		
 	}
 
-	public void listenAndDispatch() {	
+	@Override
+	public void run() {	
+		requestSimulator.start();
+		System.out.println("Floor "+floorNum+": Started");
+		
 		while(true) {
 			//listen for incoming messages
 			byte[] data = new byte[1000];
