@@ -42,7 +42,7 @@ public class Scheduler {
 		if (m instanceof ElevatorRequestMessage) {
 			// add request to elevator floor queue
 			ElevatorRequestMessage erm = (ElevatorRequestMessage) m;
-			queue.add(erm.getFloor());
+			queue.add(erm.getOriginFloor());
 		} else if (m instanceof FloorRequestMessage) {
 			// add request to pick up elevators
 			FloorRequestMessage frm = (FloorRequestMessage) m;
@@ -54,22 +54,10 @@ public class Scheduler {
 			// tell the elevator where to go based on the queue
 
 			// if am floor is queue.peek(), dequeue
-			int dest = queue.peek();
-			int current = am.getFloor();
-			if (current == dest) {
-				queue.remove();
-				sendToElevator(MessageType.OPENDOOR);
-				return;
-			}
-			// dest is now latest on queue
-			MessageType direction = MessageType.GOUP;
-			if (current - dest > 0) {
-				direction = MessageType.GODOWN;
-			}
 
 			// create a new ElevatorMessage, and send it to the elevator
 			// based on what floor it should go to next
-			sendToElevator(direction);
+			// sendToElevator(direction);
 		}
 
 	}

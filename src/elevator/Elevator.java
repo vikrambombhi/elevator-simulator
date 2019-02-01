@@ -48,7 +48,7 @@ public class Elevator {
 		try {
 			while (true) {
 				byte data[] = new byte[100];
-				DatagramPacket receivePacket = Message.receive(receiveSocket, data);
+				DatagramPacket receivePacket = Message.receive(receiveSocket);
 				Message m = Message.deserialize(receivePacket.getData());
 				handleMessage(m);
 			}
