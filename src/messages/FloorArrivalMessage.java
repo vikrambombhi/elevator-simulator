@@ -2,6 +2,8 @@ package messages;
 
 import java.io.Serializable;
 
+import messages.ElevatorRequestMessage.Direction;
+
 //this message is sent from the arrival Sensor to all concerning subsystems when an elevator reaches its destination
 public class FloorArrivalMessage implements Message, Serializable {
 
@@ -12,7 +14,6 @@ public class FloorArrivalMessage implements Message, Serializable {
 	
 	private int elevator;
 	private int floor;
-	public enum Direction { UP, DOWN };
 	private Direction direction;
 	
 	public FloorArrivalMessage() {

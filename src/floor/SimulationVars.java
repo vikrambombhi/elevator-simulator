@@ -14,7 +14,8 @@ public  class SimulationVars {
 	static InetAddress schedulerAddress = InetAddress.getLoopbackAddress();
 	static int schedulerPort = 3000;
 	
-	static InetAddress floorSystemAddress = InetAddress.getLoopbackAddress();
-	static int floorSystemPort = 4004;
+	static InetAddress[] floorAddresses = {InetAddress.getLoopbackAddress(), InetAddress.getLoopbackAddress(), InetAddress.getLoopbackAddress()};
+	static int[] floorPorts = {5000, 5001, 5002};
+	
 	
 }

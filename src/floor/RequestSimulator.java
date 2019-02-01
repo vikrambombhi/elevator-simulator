@@ -7,85 +7,52 @@ import java.net.SocketException;
 
 import messages.ElevatorRequestMessage;
 import messages.ElevatorRequestMessage.Direction;
+import messages.FloorMetaMessage;
 import messages.Message;
 
 public class RequestSimulator implements Runnable{
 	
-	DatagramSocket sendSocket;
-	DatagramPacket sendPacket;
+	private DatagramSocket sendSocket;
+	private int floorNum;
 	
-	public RequestSimulator() {
+	public RequestSimulator(int f) {
 		try {
 			sendSocket = new DatagramSocket();
 		} catch (SocketException e) {
 			e.printStackTrace();
 		    System.exit(1);
 		}
+		
+		floorNum = f;
 	}
 	
 	@Override
 	public void run() {
 		
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
+		//for the scheduler
 		ElevatorRequestMessage m = new ElevatorRequestMessage();
 		m.setDirection(Direction.UP);
-		m.setFloor(1);
+		m.setFloor(floorNum);
 		byte[] data = Message.serialize(m);
-		//inform the floor subsystem
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorSystemAddress, SimulationVars.floorSystemPort);
-		send(sendPacket);
-		//inform the scheduler
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
-		send(sendPacket);
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
+		Message.send(sendSocket, sendPacket);	
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		//for the origin floor
+		FloorMetaMessage f = new FloorMetaMessage(true);
+		if (floorNum == SimulationVars.numberOfFloors-1) {
+			f.setDestinationFloor(0);
+		} else {
+			f.setDestinationFloor(SimulationVars.numberOfFloors-1);
 		}
-		
-		m = new ElevatorRequestMessage();
-		m.setDirection(Direction.UP);
-		m.setFloor(2);
-		data = Message.serialize(m);
-		//inform the floor subsystem
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorSystemAddress, SimulationVars.floorSystemPort);
-		send(sendPacket);
-		//inform the scheduler
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
-		send(sendPacket);
-		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		m = new ElevatorRequestMessage();
-		m.setDirection(Direction.DOWN);
-		m.setFloor(3);
-		data = Message.serialize(m);
-		//inform the floor subsystem
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorSystemAddress, SimulationVars.floorSystemPort);
-		send(sendPacket);
-		//inform the scheduler
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
-		send(sendPacket);
+		f.setStartingFloor(floorNum);
+		data = Message.serialize(f);
+		sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[floorNum], SimulationVars.floorPorts[floorNum]);
+		Message.send(sendSocket, sendPacket);
 	}
-	
-	private void send(DatagramPacket sendPacket) {
-		// Send the datagram packet to the client via the send socket.
-		try {
-			sendSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-
 }

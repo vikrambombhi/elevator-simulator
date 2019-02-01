@@ -2,16 +2,18 @@ package floor;
 
 public class Floor {
 	
+	public enum directionLampState {IDLE, UP, DOWN};
+	
 	//static model
-	int floorNum;
-	boolean isBotFloor;
-	boolean isTopFloor;
+	private int floorNum;
+	private boolean isBotFloor;
+	private boolean isTopFloor;
 	
 	//dynamic model
-	boolean upLamp;
-	boolean downLamp;
-	enum directionLampState {IDLE, UP, DOWN};
-	directionLampState[] directionLamps;
+	private boolean upLamp;
+	private boolean downLamp;
+
+	private directionLampState[] directionLamps;
 
 	public Floor(int floor, boolean isBot, boolean isTop) {
 		floorNum = floor;

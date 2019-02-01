@@ -5,17 +5,16 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import messages.FloorArrivalMessage;
-import messages.FloorArrivalMessage.Direction;
+import messages.ElevatorRequestMessage.Direction;
 import messages.Message;
 
-public class ArrivalSensor extends Thread{
+public class ArrivalSensor implements Runnable{
 	
-	DatagramPacket sendPacket;
-	DatagramSocket sendSocket;
+	private DatagramSocket sendSocket;
 	
-	int elevatorShaft;
-	int startFloor;
-	int endFloor;
+	private int elevatorShaft;
+	private int startFloor;
+	private int endFloor;
 
 	public ArrivalSensor(int elevator, int startingFloor, int endingFloor) {
 		elevatorShaft = elevator;
@@ -51,24 +50,13 @@ public class ArrivalSensor extends Thread{
 		}
 		
 		//tell the elevator it made it
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[elevatorShaft], SimulationVars.elevatorPorts[elevatorShaft]);
-		send(sendPacket);
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[elevatorShaft], SimulationVars.elevatorPorts[elevatorShaft]);
+		Message.send(sendSocket, sendPacket);
 		//tell the scheduler the elevator made it
 		sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
-		send(sendPacket);
+		Message.send(sendSocket, sendPacket);
 		//tell the floorSystem the elevator made it
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorSystemAddress, SimulationVars.floorSystemPort);
-		send(sendPacket);
+		sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[endFloor], SimulationVars.floorPorts[endFloor]);
+		Message.send(sendSocket, sendPacket);
 	}
-	
-	private void send(DatagramPacket sendPacket) {
-		// Send the datagram packet to the client via the send socket.
-		try {
-			sendSocket.send(sendPacket);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-	
 }
