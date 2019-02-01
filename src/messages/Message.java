@@ -45,7 +45,8 @@ public interface Message {
 		}
 	}
 
-	public static DatagramPacket receive(DatagramSocket sock, byte[] data) {
+	public static DatagramPacket receive(DatagramSocket sock) {
+		byte data[] = new byte[100];
 		DatagramPacket pack = new DatagramPacket(data, data.length);
 
 		// Block until a datagram packet is received from receiveSocket.

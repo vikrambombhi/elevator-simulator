@@ -10,118 +10,119 @@ import messages.*;
  * Elevator is the subsystem placed in each elevator.
  */
 public class Elevator {
-    // State is the possible states that the elevator can be in.
-    enum State {
-        MOVING_UP,
-        MOVING_DOWN,
-        STOPPED_DOORS_CLOSED,
-        STOPPED_DOORS_OPENED
-    }
+	// State is the possible states that the elevator can be in.
+	public static String HOST = "127.0.0.1";
+	public static short PORT = 4000;
 
-    private State state;
+	enum State {
+		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED
+	}
 
-    // Simulates the physical components attached to the elevator.
-    private Motor motor;
-    private Door door;
+	private State state;
 
-    // Communication sockets
-    private DatagramSocket sendSocket, receiveSocket;
+	// Simulates the physical components attached to the elevator.
+	private Motor motor;
+	private Door door;
 
-    public Elevator() {
-        state = State.STOPPED_DOORS_CLOSED;
-        motor = new Motor();
-        door = new Door();
+	// Communication sockets
+	private DatagramSocket sendSocket, receiveSocket;
 
-        try {
-            sendSocket = new DatagramSocket();
-            receiveSocket = new DatagramSocket(4000);
-        } catch (SocketException se) {
-            se.printStackTrace();
-            System.exit(1);
-        }
-    }
+	public Elevator() {
+		state = State.STOPPED_DOORS_CLOSED;
+		motor = new Motor();
+		door = new Door();
 
-    /*
-     * run starts the elevator subsystem and awaits for messages.
-     */
-    public void run() {
-        try {
-            while (true) {
-                byte data[] = new byte[100];
-                DatagramPacket receivePacket = Message.receive(receiveSocket, data);
-                Message m = Message.deserialize(receivePacket.getData());
-                handleMessage(m);
-            }
-        } catch (Exception e) {
-            System.out.println("Elevator quiting.");
-            e.printStackTrace();
-            close();
-        }
-    }
+		try {
+			sendSocket = new DatagramSocket();
+			receiveSocket = new DatagramSocket(PORT);
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+		}
+	}
 
-    /*
-     * close closes the communication sockets of the elevator subsystem.
-     */
-    public void close() {
-        sendSocket.close();
-        receiveSocket.close();
-    }
+	/*
+	 * run starts the elevator subsystem and awaits for messages.
+	 */
+	public void run() {
+		try {
+			while (true) {
+				byte data[] = new byte[100];
+				DatagramPacket receivePacket = Message.receive(receiveSocket);
+				Message m = Message.deserialize(receivePacket.getData());
+				handleMessage(m);
+			}
+		} catch (Exception e) {
+			System.out.println("Elevator quiting.");
+			e.printStackTrace();
+			close();
+		}
+	}
 
-    /*
-     * handleMessage runs the corresponding action for the message type.
-     */
-    private void handleMessage(Message m) {
-        // State machine switch
-        if (m instanceof ElevatorMessage) {
-            // scheduler tells the elevator to move, stop, open or close.
-            handleElevatorMessage((ElevatorMessage) m);
-        }
-        // TODO: handle elevator floor being requested and routed to the scheduler
-    }
+	/*
+	 * close closes the communication sockets of the elevator subsystem.
+	 */
+	public void close() {
+		sendSocket.close();
+		receiveSocket.close();
+	}
 
-    /*
-     * handleElevatorMessage handles commands for the elevator's physical components.
-     */
-    private void handleElevatorMessage(ElevatorMessage m) {
-        switch (m.getMessageType()) {
-            case STOP:
-                assert(state == State.MOVING_UP || state == State.MOVING_DOWN);
-                motor.stop();
-                state = State.STOPPED_DOORS_CLOSED;
-                break;
+	/*
+	 * handleMessage runs the corresponding action for the message type.
+	 */
+	private void handleMessage(Message m) {
+		// State machine switch
+		if (m instanceof ElevatorMessage) {
+			// scheduler tells the elevator to move, stop, open or close.
+			handleElevatorMessage((ElevatorMessage) m);
+		}
+		// TODO: handle elevator floor being requested and routed to the scheduler
+	}
 
-            case GOUP:
-                assert(state == State.STOPPED_DOORS_CLOSED);
-                motor.move(Motor.Direction.UP);
-                state = State.MOVING_UP;
-                break;
+	/*
+	 * handleElevatorMessage handles commands for the elevator's physical
+	 * components.
+	 */
+	private void handleElevatorMessage(ElevatorMessage m) {
+		switch (m.getMessageType()) {
+		case STOP:
+			assert (state == State.MOVING_UP || state == State.MOVING_DOWN);
+			motor.stop();
+			state = State.STOPPED_DOORS_CLOSED;
+			break;
 
-            case GODOWN:
-                assert(state == State.STOPPED_DOORS_CLOSED);
-                motor.move(Motor.Direction.DOWN);
-                state = State.MOVING_DOWN;
-                break;
+		case GOUP:
+			assert (state == State.STOPPED_DOORS_CLOSED);
+			motor.move(Motor.Direction.UP);
+			state = State.MOVING_UP;
+			break;
 
-            case OPENDOOR:
-                assert(state == State.STOPPED_DOORS_CLOSED);
-                door.open();
-                state = State.STOPPED_DOORS_OPENED;
-                break;
+		case GODOWN:
+			assert (state == State.STOPPED_DOORS_CLOSED);
+			motor.move(Motor.Direction.DOWN);
+			state = State.MOVING_DOWN;
+			break;
 
-            case CLOSEDOOR:
-                assert(state == State.STOPPED_DOORS_OPENED);
-                door.close();
-                state = State.STOPPED_DOORS_CLOSED;
-                break;
-            default:
-                System.out.println("Elevator: ElevatorMessage type case not handled: " + m.getMessageType());
-                System.exit(1);
-        }
-    }
+		case OPENDOOR:
+			assert (state == State.STOPPED_DOORS_CLOSED);
+			door.open();
+			state = State.STOPPED_DOORS_OPENED;
+			break;
 
-    public static void main(String args[]) {
-        System.out.println("Elevator: Starting on port 4000");
-        Elevator e = new Elevator();
-        e.run();
-    }
+		case CLOSEDOOR:
+			assert (state == State.STOPPED_DOORS_OPENED);
+			door.close();
+			state = State.STOPPED_DOORS_CLOSED;
+			break;
+		default:
+			System.out.println("Elevator: ElevatorMessage type case not handled: " + m.getMessageType());
+			System.exit(1);
+		}
+	}
+
+	public static void main(String args[]) {
+		System.out.println("Elevator: Starting on port 4000");
+		Elevator e = new Elevator();
+		e.run();
+	}
 }
