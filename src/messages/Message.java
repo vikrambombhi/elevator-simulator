@@ -45,7 +45,9 @@ public interface Message {
 		}
 	}
 
-	public static DatagramPacket receive(DatagramSocket sock, byte[] data) {
+	public static DatagramPacket receive(DatagramSocket sock) {
+		// https://stackoverflow.com/questions/9203403/java-datagrampacket-udp-maximum-send-recv-buffer-size
+		byte data[] = new byte[1500];
 		DatagramPacket pack = new DatagramPacket(data, data.length);
 
 		// Block until a datagram packet is received from receiveSocket.

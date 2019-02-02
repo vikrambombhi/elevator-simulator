@@ -1,108 +1,97 @@
 package scheduler;
 
-import java.io.*;
-import java.net.*;
-import java.util.Arrays;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.LinkedList;
+
+import messages.ArrivalMessage;
+import messages.ElevatorMessage;
+import messages.ElevatorMessage.MessageType;
+import messages.ElevatorRequestMessage;
+import messages.FloorRequestMessage;
+import messages.Message;
+import elevator.Elevator;
 
 public class Scheduler {
-  DatagramSocket sendAndReceive, receiveSocket;
+	private DatagramSocket sock;
+	private LinkedList<Integer> queue;
 
-  public Scheduler() {
-    try {
-      // Construct a datagram socket and bind it to any available
-      // port on the local host machine. This socket will be used to
-      // send UDP Datagram packets.
-      sendAndReceive = new DatagramSocket();
+	public Scheduler() {
+		try {
+			// Construct a datagram socket and bind it to port 3000
+			// on the local host machine. This socket will be used to
+			// receive UDP Datagram packets.
+			sock = new DatagramSocket(3000);
 
-      // Construct a datagram socket and bind it to port 23
-      // on the local host machine. This socket will be used to
-      // receive UDP Datagram packets.
-      receiveSocket = new DatagramSocket(3000);
+			// to test socket timeout (2 seconds)
+			// receiveSocket.setSoTimeout(2000);
+		} catch (SocketException se) {
+			se.printStackTrace();
+			System.exit(1);
+		}
+		queue = new LinkedList<Integer>();
+	}
 
-      // to test socket timeout (2 seconds)
-      // receiveSocket.setSoTimeout(2000);
-    } catch (SocketException se) {
-      se.printStackTrace();
-      System.exit(1);
-    }
-  }
+	public void schedule() {
+		// continuously listen for packets from elevators or floors
+		// handle them
+		Message m = Message.deserialize(Message.receive(sock).getData());
+		if (m instanceof ElevatorRequestMessage) {
+			// add request to elevator floor queue
+			ElevatorRequestMessage erm = (ElevatorRequestMessage) m;
+			queue.add(erm.getOriginFloor());
+		} else if (m instanceof FloorRequestMessage) {
+			// add request to pick up elevators
+			FloorRequestMessage frm = (FloorRequestMessage) m;
+			queue.add(frm.getFloor());
+		} else if (m instanceof ArrivalMessage) {
+			// this means that an elevator arrived at a floor, tell it what to
+			// do next. Either open doors, or go up or down
+			ArrivalMessage am = (ArrivalMessage) m;
+			// tell the elevator where to go based on the queue
 
-  public DatagramPacket receive(byte[] data, DatagramSocket socket) {
-    DatagramPacket receivePacket = new DatagramPacket(data, data.length);
-    System.out.println("Scheduler: Waiting for Packet.\n");
+			// if am floor is queue.peek(), dequeue
 
-    // Block until a datagram packet is received from receiveSocket.
-    try {
-      socket.receive(receivePacket);
-    } catch (IOException e) {
-      System.out.print("IO Exception: likely:");
-      System.out.println("Receive Socket Timed Out.\n" + e);
-      e.printStackTrace();
-      System.exit(1);
-    }
+			// create a new ElevatorMessage, and send it to the elevator
+			// based on what floor it should go to next
+			// sendToElevator(direction);
+		}
 
-    return receivePacket;
-  }
+	}
 
-  public void send(DatagramPacket sendPacket) {
-    System.out.println("Scheduler: Sending packet:");
-    int len = sendPacket.getLength();
-    String str  = new String(sendPacket.getData(), 0, len);
+	private void sendToElevator(MessageType action) {
+		byte[] data = Message.serialize((new ElevatorMessage(action)));
+		InetAddress destHost = null;
+		try {
+			destHost = InetAddress.getByName(Elevator.HOST);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		DatagramPacket pack = new DatagramPacket(data, data.length, destHost, Elevator.PORT);
+		Message.send(sock, pack);
+	}
 
-    // Send the datagram packet to the client via the send socket.
-    try {
-      sendAndReceive.send(sendPacket);
-    } catch (IOException e) {
-      e.printStackTrace();
-      System.exit(1);
-    }
-  }
+	public void close() {
+		sock.close();
+	}
 
-  public void receiveAndForward() {
-    byte data[] = new byte[100];
-    DatagramPacket receivePacket = receive(data, receiveSocket);
+	public void run() {
+		try {
+			while (true) {
+				schedule();
+			}
+		} catch (Exception e) {
+			close();
+		}
+	}
 
-    InetAddress originAddress = receivePacket.getAddress();
-    int originPort = receivePacket.getPort();
-
-    // create new data packet but change the address to the server
-    DatagramPacket sendPacket = null;
-    try {
-      sendPacket = new DatagramPacket(data, receivePacket.getLength(), InetAddress.getLocalHost(), 4000);
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-      System.exit(1);
-    }
-
-    // forward
-    send(sendPacket);
-
-    // get upstream response
-    data = new byte[100];
-    receive(data, sendAndReceive);
-
-    sendPacket = new DatagramPacket(data, receivePacket.getLength(), originAddress, originPort);
-    send(sendPacket);
-  }
-
-  public void close() {
-    sendAndReceive.close();
-    receiveSocket.close();
-  }
-
-  public void run() {
-    try  {
-      while(true) {
-        receiveAndForward();
-      }
-    } catch (Exception e) {
-      close();
-    }
-  }
-
-  public static void main(String args[]) {
-    System.out.println("Scheduler: Starting on port 3000");
-    Scheduler proxy = new Scheduler();
-    proxy.run();
-  }
+	public static void main(String args[]) {
+		System.out.println("Scheduler: Starting on port 3000");
+		Scheduler proxy = new Scheduler();
+		proxy.run();
+	}
 }
