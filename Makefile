@@ -23,10 +23,10 @@ floor:
 
 test: build
 	cd src/
-	java org.junit.runner.JUnitCore floor.FloorUnitTests
+	java -cp ../vendor/junit-4.10.jar: org.junit.runner.JUnitCore floor.FloorUnitTests
 
 build:
-	javac src/**/*.java
+	javac -cp vendor/junit-4.10.jar src/**/*.java
 
 clean:
 	rm -r bin/*
