@@ -3,23 +3,8 @@ make: build
 run: build
 	./run
 
-.ONESHELL:
-elevator:
-	cd src/
-	javac elevator/*.java
-	java elevator.Elevator
-
-.ONESHELL:
-scheduler:
-	cd src/
-	javac scheduler/*.java
-	java scheduler.Scheduler
-
-.ONESHELL:
-floor:
-	cd src/
-	javac floor/*.java
-	java floor.FloorManager
+clean:
+	rm -r src/**/*.class
 
 test: build
 	cd src/
@@ -28,5 +13,11 @@ test: build
 build:
 	javac -cp vendor/junit-4.10.jar src/**/*.java
 
-clean:
-	rm -r bin/*
+elevator: build
+	java elevator.ElevatorSubsytem
+
+scheduler: build
+	java scheduler.Scheduler
+
+floor: build
+	java floor.FloorManager
