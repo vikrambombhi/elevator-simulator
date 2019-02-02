@@ -19,7 +19,11 @@ scheduler:
 floor:
 	cd src/
 	javac floor/*.java
-	java floor.Floor
+	java floor.FloorManager
+
+test: build
+	cd src/
+	java org.junit.runner.JUnitCore floor.FloorUnitTests
 
 build:
 	javac src/**/*.java

@@ -6,4 +6,4 @@ cd src || return
 
 java elevator.Elevator &
 java scheduler.Scheduler &
-java floor.Floor
+java floor.FloorManager
