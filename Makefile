@@ -3,6 +3,9 @@ make: build
 run: build
 	./run
 
+test: build
+	java -cp src/:junit-4.11.jar org.junit.runner.JUnitCore floor.FloorUnitTests
+
 clean:
 	rm -r src/**/*.class
 
@@ -14,7 +17,7 @@ build:
 	javac -cp vendor/junit-4.10.jar src/**/*.java
 
 elevator: build
-	java elevator.ElevatorSubsytem
+	java elevator.ElevatorSubSystem
 
 scheduler: build
 	java scheduler.Scheduler
