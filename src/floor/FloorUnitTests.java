@@ -17,13 +17,15 @@ public class FloorUnitTests extends TestCase {
 		
 		//try each combination of bools on the constructor
 		for (int i = 0; i < SimulationVars.numberOfFloors; i++) {
+			boolean isBot = false;
+			boolean isTop = false;
 			if (i == 0) {
-				floors[i] = new FloorSubsystem(i, true, false);
-			} else if (i == SimulationVars.numberOfFloors-1) {
-				floors[i] = new FloorSubsystem(i, false, true);
-			} else {
-				floors[i] = new FloorSubsystem(i, false, false);
-			}
+				isBot = true;
+			} 
+			if (i == SimulationVars.numberOfFloors-1) {
+				isTop = true;
+			} 
+			floors[i] = new FloorSubsystem(i, isBot, isTop);
 		}
 		
 		Floor tempFloor;
