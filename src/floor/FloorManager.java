@@ -3,14 +3,14 @@ package floor;
 public class FloorManager {
 
 	private static Thread floorSubsystems[];
-	
+
 	public FloorManager() {
-		
+
 	}
-	
+
 	public static void main(String args[]) {
 		floorSubsystems = new Thread[SimulationVars.numberOfFloors];
-		
+
 		for (int i = 0; i < SimulationVars.numberOfFloors; i ++) {
 			boolean isBot = false;
 			boolean isTop = false;
@@ -21,9 +21,14 @@ public class FloorManager {
 			if (i == SimulationVars.numberOfFloors-1) {
 				isTop = true;
 			}
-			
+
 			floorSubsystems[i] = new Thread(new FloorSubsystem(i, isTop, isBot));
 			floorSubsystems[i].start();
 		}
+
+        for (Thread t : floorSubsystems) {
+            try { t.join(); } catch (InterruptedException e) { }
+        }
+        System.out.println("exiting");
 	}
 }
