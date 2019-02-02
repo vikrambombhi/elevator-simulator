@@ -7,7 +7,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 
-import elevator.Elevator;
+import elevator.ElevatorSubSystem;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
 import messages.FloorArrivalMessage;
@@ -87,12 +87,12 @@ public class Scheduler {
 		byte[] data = Message.serialize((new ElevatorMessage(action)));
 		InetAddress destHost = null;
 		try {
-			destHost = InetAddress.getByName(Elevator.HOST);
+			destHost = InetAddress.getByName(ElevatorSubSystem.HOST);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		DatagramPacket pack = new DatagramPacket(data, data.length, destHost, Elevator.PORT);
+		DatagramPacket pack = new DatagramPacket(data, data.length, destHost, ElevatorSubSystem.PORT);
 		Message.send(sendSock, pack);
 	}
 
