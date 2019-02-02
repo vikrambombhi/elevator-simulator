@@ -18,27 +18,27 @@ public class FloorSubsystem implements Runnable {
 	
 	DatagramSocket receiveSocket;
 	
-	Floor floor;
+	private Floor floor;
 	
-	int floorNum;
+	private int floorNum;
 	
 	//each elevator need and arrival sensor
-	Thread[] arrivalSensors;
+	private Thread[] arrivalSensors;
 	
-	Thread requestSimulator;
+	private Thread requestSimulator;
 	
 	//to send the destination of passengers to each elevator
-	Thread[] destinationSenders;
+	private Thread[] destinationSenders;
 	
 	//list of expected passengers and the elevators they will be on
 	//ourPassengers[n] will hold the number of passengers that will get off on this floor when elevator n arrives
-	int[] ourPassengers;
+	private int[] ourPassengers;
 	
 	//list of passengers going up - we store their destination
-	List<Integer> goingUp;
+	private List<Integer> goingUp;
 	
 	//list of passengers going up - we store their destination
-	List<Integer> goingDown;
+	private List<Integer> goingDown;
 	
 	public FloorSubsystem(int num, boolean isBot, boolean isTop) {
 		
@@ -140,17 +140,17 @@ public class FloorSubsystem implements Runnable {
 	public void arrivalMessage(FloorArrivalMessage m) {
 		int arrivingElevator = ((FloorArrivalMessage) m).getElevator();
 		Direction direction = ((FloorArrivalMessage) m).getDirection();
-		System.out.println("Floor "+floorNum+": Elevator "+arrivingElevator+"arrived at a floor "+floorNum);
+		System.out.println("Floor "+floorNum+": Elevator "+arrivingElevator+" arrived at a floor "+floorNum);
 		
 		//check to see if anyone is getting off here
 		if (ourPassengers[m.getElevator()] != 0) {
-			System.out.println("Floor "+floorNum+": "+ourPassengers[m.getElevator()]+" passengers arrived at their destination");
+			System.out.println("Floor "+floorNum+": "+ourPassengers[m.getElevator()]+" passenger(s) arrived at their destination");
 			ourPassengers[m.getElevator()] = 0;
 		}
 		
 		//if a passenger is getting on going UP
 		if(floor.getUpLamp() && direction == Direction.UP) {
-			System.out.println("Floor "+floorNum+": "+goingUp.size()+"passengers going UP stepped into elevator "+arrivingElevator);
+			System.out.println("Floor "+floorNum+": "+goingUp.size()+" passenger(s) going UP stepped into elevator "+arrivingElevator);
 			//simulate the passenger pressing their destination
 			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingUp));
 			destinationSenders[m.getElevator()].start();
@@ -162,7 +162,7 @@ public class FloorSubsystem implements Runnable {
 			
 		//if a passenger is getting on going DOWN
 		} else if (floor.getDownLamp() && direction == Direction.DOWN) {
-			System.out.println("Floor "+floorNum+": "+goingUp.size()+"passengers going DOWN stepped into elevator "+arrivingElevator);
+			System.out.println("Floor "+floorNum+": "+goingUp.size()+" passenger(s) going DOWN stepped into elevator "+arrivingElevator);
 			
 			//simulate the passenger pressing their destination
 			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingDown));
@@ -172,5 +172,30 @@ public class FloorSubsystem implements Runnable {
 			//modify model
 			floor.setDownLamp(false);
 		}
+	}
+	
+	public int getFloorNum() {
+		return floorNum;
+	}
+	
+	public Floor getFloor() {
+		return floor;
+	}
+	
+	public List<Integer> getUpRequests(){
+		return goingUp;
+	}
+	
+	public List<Integer> getDownRequests(){
+		return goingDown;
+	}
+	
+	public int[] getPassengers() {
+		return ourPassengers;
+	}
+	
+	public void tearDown() {
+		//clean up
+		receiveSocket.close();
 	}
 }

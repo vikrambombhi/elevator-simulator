@@ -40,6 +40,10 @@ public class Floor {
 		directionLamps[elevatorShaft] = state;
 	}
 	
+	public directionLampState getDirectionLamp(int elevatorShaft) {
+		return directionLamps[elevatorShaft];
+	}
+	
 	public boolean getUpLamp() {
 		return upLamp;
 	}
