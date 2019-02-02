@@ -78,8 +78,7 @@ public class FloorSubsystem implements Runnable {
 		
 		while(true) {
 			//listen for incoming messages
-			byte[] data = new byte[1000];
-			Message m = Message.deserialize(Message.receive(receiveSocket, data).getData());
+			Message m = Message.deserialize(Message.receive(receiveSocket).getData());
 		
 			//if request message
 			if(m instanceof FloorMetaMessage) {

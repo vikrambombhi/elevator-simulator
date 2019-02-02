@@ -38,7 +38,7 @@ public class RequestSimulator implements Runnable{
 		//for the scheduler
 		ElevatorRequestMessage m = new ElevatorRequestMessage();
 		m.setDirection(Direction.UP);
-		m.setFloor(floorNum);
+		m.setOriginFloor(floorNum);
 		byte[] data = Message.serialize(m);
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
 		Message.send(sendSocket, sendPacket);	
