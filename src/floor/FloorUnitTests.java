@@ -21,10 +21,10 @@ public class FloorUnitTests extends TestCase {
 			boolean isTop = false;
 			if (i == 0) {
 				isBot = true;
-			} 
+			}
 			if (i == SimulationVars.numberOfFloors-1) {
 				isTop = true;
-			} 
+			}
 			floors[i] = new FloorSubsystem(i, isBot, isTop);
 		}
 

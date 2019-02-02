@@ -79,7 +79,6 @@ public class Scheduler {
 				sendToElevator(MessageType.GOUP);
 			}
 		}
-
 	}
 
 	private void sendToElevator(MessageType action) {

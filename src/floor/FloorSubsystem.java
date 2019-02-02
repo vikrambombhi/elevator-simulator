@@ -76,6 +76,18 @@ public class FloorSubsystem implements Runnable {
 		requestSimulator.start();
 		System.out.println("Floor "+floorNum+": Started");
 
+        // The elevator starts on floor 0
+        if (floorNum == 0) {
+            for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
+                arrivalSensors[i] = new Thread(new ArrivalSensor(i, 0, 0));
+                arrivalSensors[i].start();
+            }
+
+            for (Thread t : arrivalSensors) {
+                try { t.join(); } catch (InterruptedException e) { }
+            }
+        }
+
 		while(true) {
 			//listen for incoming messages
 			Message m = Message.deserialize(Message.receive(receiveSocket).getData());
