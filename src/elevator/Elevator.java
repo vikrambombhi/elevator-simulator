@@ -47,7 +47,7 @@ public class Elevator {
 	public void run() {
 		try {
 			while (true) {
-				byte data[] = new byte[100];
+				System.out.println("Elevator: Listening for messages");
 				DatagramPacket receivePacket = Message.receive(receiveSocket);
 				Message m = Message.deserialize(receivePacket.getData());
 				handleMessage(m);
@@ -84,6 +84,7 @@ public class Elevator {
 	 * components.
 	 */
 	private void handleElevatorMessage(ElevatorMessage m) {
+		System.out.println("Elevator: Handling message of type " + m.getMessageType());
 		switch (m.getMessageType()) {
 		case STOP:
 			assert (state == State.MOVING_UP || state == State.MOVING_DOWN);

@@ -15,6 +15,9 @@ import messages.FloorRequestMessage;
 import messages.Message;
 
 public class Scheduler {
+	public static String HOST = "127.0.0.1";
+	public static short PORT = 3000;
+
 	private DatagramSocket recvSock, sendSock;
 	private LinkedList<Integer> queue;
 
@@ -23,7 +26,7 @@ public class Scheduler {
 			// Construct a datagram socket and bind it to port 3000
 			// on the local host machine. This socket will be used to
 			// receive UDP Datagram packets.
-			recvSock = new DatagramSocket(3000);
+			recvSock = new DatagramSocket(PORT);
 			sendSock = new DatagramSocket();
 
 			// to test socket timeout (2 seconds)
@@ -101,7 +104,7 @@ public class Scheduler {
 	public void run() {
 		try {
 			while (true) {
-				sendToElevator(MessageType.GOUP);
+				// sendToElevator(MessageType.GOUP);
 				schedule();
 			}
 		} catch (Exception e) {
