@@ -17,6 +17,11 @@ The basic system has been set up with all three subsystems with communication be
 The following is the elevator subsystems UML diagram
 ![elevator subsystem uml](diagrams/elevator_uml.png?raw=true)
 
+The following is the elevator state diagram
+![elevator subsystem uml](diagrams/elevator_state.png?raw=true)
+
+We feel that the scheduler should not be modeled using a state machine because it essentually only has two states, 'servicing' and 'idle'. The scheduler is essentually stateless and all the state is held in the messages it sends/recieves.
+
 The following is the floor subsystems UML diagram
 ![floor subsystem uml](diagrams/floorUML.png?raw=true)
 
