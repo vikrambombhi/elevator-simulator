@@ -50,40 +50,33 @@ public class Scheduler {
 			queue.add(erm.getOriginFloor());
 			System.out.println("Scheduler: New queue: " + queue.toString());
 		} else if (m instanceof FloorArrivalMessage) {
-
-			// JUST FUCKING DROP THESE PACKETS
-
+			// when an elevator arrives, tell it to go up or down, depending on the queue
+			FloorArrivalMessage FAM = (FloorArrivalMessage) m;
+			// BRUH FAM
+			// tell elevator to go up, down, or stop & open
+			sendToElevator(directElevatorTo(FAM.getFloor(), queue.peek()));
 		} else if (m instanceof FloorRequestMessage) {
-			// this means that an elevator arrived at a floor, tell it what to
-			// do next. Either open doors, or go up or down
-			// this also means that the elevator's doors are now closing, and there
-			// could be floors to enqueue
+			// this means that an elevator is leaving a floor
+			// we know what floor buttons were pressed
 			FloorRequestMessage frm = (FloorRequestMessage) m;
-			// tell the elevator where to go based on the queue
+			// enqueue requested floors
 			for (int floor : frm.getDestinations()) {
 				queue.add(floor);
 				System.out.println("Scheduler: New queue: " + queue.toString());
 			}
-
-			// if am floor is queue.peek(), dequeue and tell the elevator
-			// to stop and open doors
-			if (queue.size() > 0 && frm.getCurrent() == queue.peek()) {
-				queue.remove();
-				sendToElevator(MessageType.STOP);
-				return;
-			}
-
-			// create a new ElevatorMessage, and send it to the elevator
-			// based on what floor it should go to next
-			// sendToElevator(direction);
-			if (queue.size() > 0 && frm.getCurrent() - queue.peek() > 0) {
-				// go down
-				sendToElevator(MessageType.GODOWN);
-			} else {
-				// go up
-				sendToElevator(MessageType.GOUP);
-			}
+			// send the elevator on its way
+			sendToElevator(directElevatorTo(frm.getCurrent(), queue.peek()));
 		}
+	}
+
+	private MessageType directElevatorTo(int currentFloor, int toFloor) {
+		if (currentFloor == toFloor) {
+			return MessageType.STOP;
+		}
+		if (currentFloor - toFloor > 0) {
+			return MessageType.GODOWN;
+		}
+		return MessageType.GOUP;
 	}
 
 	private void sendToElevator(MessageType action) {
