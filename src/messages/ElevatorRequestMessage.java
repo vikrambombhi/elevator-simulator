@@ -6,7 +6,7 @@ import java.io.Serializable;
 public class ElevatorRequestMessage implements Message, Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2054027936721244415L;
 

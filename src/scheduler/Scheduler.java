@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import elevator.ElevatorSubSystem;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
+import messages.ElevatorRequestMessage;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
@@ -43,11 +44,16 @@ public class Scheduler {
 		// handle them
 		System.out.println("Scheduler: Waiting for message");
 		Message m = Message.deserialize(Message.receive(recvSock).getData());
-		if (m instanceof FloorRequestMessage) {
+		if (m instanceof ElevatorRequestMessage) {
+			// add request to pick up elevators
+			ElevatorRequestMessage erm = (ElevatorRequestMessage) m;
+			queue.add(erm.getOriginFloor());
+			System.out.println("Scheduler: New queue: " + queue.toString());
+        } else if (m instanceof FloorRequestMessage) {
 			// add request to pick up elevators
 			FloorRequestMessage frm = (FloorRequestMessage) m;
 			queue.add(frm.getFloor());
-			System.out.println("New queue: " + queue.toString());
+			System.out.println("Scheduler: New queue: " + queue.toString());
 		} else if (m instanceof FloorArrivalMessage) {
 			// this means that an elevator arrived at a floor, tell it what to
 			// do next. Either open doors, or go up or down
@@ -57,7 +63,7 @@ public class Scheduler {
 			// tell the elevator where to go based on the queue
 			for (int floor : am.getDestinations()) {
 				queue.add(floor);
-				System.out.println("New queue: " + queue.toString());
+				System.out.println("Scheduler: New queue: " + queue.toString());
 			}
 
 			// if am floor is queue.peek(), dequeue and tell the elevator
@@ -82,7 +88,7 @@ public class Scheduler {
 	}
 
 	private void sendToElevator(MessageType action) {
-		System.out.println("Sending message of type " + action);
+		System.out.println("Scheduler: Sending message of type " + action);
 		byte[] data = Message.serialize((new ElevatorMessage(action)));
 		InetAddress destHost = null;
 		try {
