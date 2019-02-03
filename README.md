@@ -25,6 +25,9 @@ We feel that the scheduler should not be modeled using a state machine because i
 The following is the floor subsystems UML diagram
 ![floor subsystem uml](diagrams/floorUML.png?raw=true)
 
+The following is the scheduler subsystems UML diagram
+![scheduler subsystem uml](diagrams/scheduler_uml.png?raw=true)
+
 ##### Contribtions
 - Kirin Rastogi: Built the scheduler algorithm.
 - Vikram Bombhi: Basic structure and communication.
