@@ -57,6 +57,14 @@ public class Elevator {
 		case STOP:
 			assert (state == State.MOVING_UP || state == State.MOVING_DOWN);
 			motor.stop();
+            door.open();
+			state = State.STOPPED_DOORS_OPENED;
+            System.out.println(this);
+
+            // Delay open/close door
+            try { Thread.sleep(100); } catch (InterruptedException e) { }
+
+            door.close();
 			state = State.STOPPED_DOORS_CLOSED;
 			break;
 
