@@ -13,29 +13,9 @@ public class FloorRequestMessage implements Message, Serializable {
 	 */
 	private static final long serialVersionUID = -5307796681383023119L;
 
-	private ArrayList<Integer> destinations;
-	private int current;
+	private int current, destination;
 
 	public FloorRequestMessage() {
-		destinations = new ArrayList<Integer>();
-	}
-
-	public FloorRequestMessage(ArrayList<Integer> dests) {
-		destinations = dests;
-	}
-
-	/**
-	 * @return the destinations
-	 */
-	public ArrayList<Integer> getDestinations() {
-		return destinations;
-	}
-
-	/**
-	 * @param destinations the destinations to set
-	 */
-	public void setDestinations(ArrayList<Integer> destinations) {
-		this.destinations = destinations;
 	}
 
 	/**
@@ -50,6 +30,20 @@ public class FloorRequestMessage implements Message, Serializable {
 	 */
 	public void setCurrent(int current) {
 		this.current = current;
+	}
+
+	/**
+	 * @return the destination
+	 */
+	public int getDestination() {
+		return destination;
+	}
+
+	/**
+	 * @param destination the destination to set
+	 */
+	public void setDestination(int destination) {
+		this.destination = destination;
 	}
 
 }

@@ -66,10 +66,9 @@ public class Scheduler {
 			// we know what floor buttons were pressed
 			FloorRequestMessage frm = (FloorRequestMessage) m;
 			// enqueue requested floors
-			for (int floor : frm.getDestinations()) {
-				queue.add(floor);
-				System.out.println("Scheduler: New queue: " + queue.toString());
-			}
+			queue.add(frm.getDestination());
+			System.out.println("Scheduler: New queue: " + queue.toString());
+
 			// send the elevator on its way
 			sendToElevator(directElevatorTo(frm.getCurrent(), queue.peek()));
 		}
