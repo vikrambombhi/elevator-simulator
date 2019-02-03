@@ -78,6 +78,9 @@ public class FloorSubsystem implements Runnable {
 
         // The elevator starts on floor 0
         if (floorNum == 0) {
+            // sleep for 3 seconds while the request queue is being populated
+            try { Thread.sleep(3000); } catch (InterruptedException e) { }
+
             for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
                 arrivalSensors[i] = new Thread(new ArrivalSensor(i, 0, 0));
                 arrivalSensors[i].start();
