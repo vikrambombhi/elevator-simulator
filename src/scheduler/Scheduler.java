@@ -12,6 +12,7 @@ import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
 import messages.FloorArrivalMessage;
+import messages.FloorRequestMessage;
 import messages.Message;
 
 public class Scheduler {
@@ -49,20 +50,24 @@ public class Scheduler {
 			queue.add(erm.getOriginFloor());
 			System.out.println("Scheduler: New queue: " + queue.toString());
 		} else if (m instanceof FloorArrivalMessage) {
+
+			// JUST FUCKING DROP THESE PACKETS
+
+		} else if (m instanceof FloorRequestMessage) {
 			// this means that an elevator arrived at a floor, tell it what to
 			// do next. Either open doors, or go up or down
 			// this also means that the elevator's doors are now closing, and there
 			// could be floors to enqueue
-			FloorArrivalMessage am = (FloorArrivalMessage) m;
+			FloorRequestMessage frm = (FloorRequestMessage) m;
 			// tell the elevator where to go based on the queue
-			for (int floor : am.getDestinations()) {
+			for (int floor : frm.getDestinations()) {
 				queue.add(floor);
 				System.out.println("Scheduler: New queue: " + queue.toString());
 			}
 
 			// if am floor is queue.peek(), dequeue and tell the elevator
 			// to stop and open doors
-			if (queue.size() > 0 && am.getFloor() == queue.peek()) {
+			if (queue.size() > 0 && frm.getCurrent() == queue.peek()) {
 				queue.remove();
 				sendToElevator(MessageType.STOP);
 				return;
@@ -71,7 +76,7 @@ public class Scheduler {
 			// create a new ElevatorMessage, and send it to the elevator
 			// based on what floor it should go to next
 			// sendToElevator(direction);
-			if (queue.size() > 0 && am.getFloor() - queue.peek() > 0) {
+			if (queue.size() > 0 && frm.getCurrent() - queue.peek() > 0) {
 				// go down
 				sendToElevator(MessageType.GODOWN);
 			} else {
