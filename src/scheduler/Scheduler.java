@@ -49,12 +49,18 @@ public class Scheduler {
 			ElevatorRequestMessage erm = (ElevatorRequestMessage) m;
 			queue.add(erm.getOriginFloor());
 			System.out.println("Scheduler: New queue: " + queue.toString());
+			return;
 		} else if (m instanceof FloorArrivalMessage) {
+			if (queue.isEmpty()) {
+				return;
+			}
 			// when an elevator arrives, tell it to go up or down, depending on the queue
 			FloorArrivalMessage FAM = (FloorArrivalMessage) m;
+			System.out.println("Scheduler: elevator arrived at floor " + FAM.getFloor());
 			// BRUH FAM
 			// tell elevator to go up, down, or stop & open
 			sendToElevator(directElevatorTo(FAM.getFloor(), queue.peek()));
+			return;
 		} else if (m instanceof FloorRequestMessage) {
 			// this means that an elevator is leaving a floor
 			// we know what floor buttons were pressed
