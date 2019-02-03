@@ -20,7 +20,7 @@ Members:
 
 4. Open src/floor/FloorManager.java, click run in eclipse
 
-
+(Optional)5. Run src/floor/FloorUnitTests.java as junit test
 
 ## Changelog
 
