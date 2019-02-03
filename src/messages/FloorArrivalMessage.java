@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import messages.ElevatorRequestMessage.Direction;
 
 //this message is sent from the arrival Sensor to all concerning subsystems when an elevator reaches its destination
+// You also use this message to specify what floors you want when you are in the elevator
+// the scheduler listens for this
 public class FloorArrivalMessage implements Message, Serializable {
 
 	/**
