@@ -75,8 +75,8 @@ public class Elevator {
 
     public String toString() {
         return "Elevator: " + id + "\n" +
-            "State: " + state + "\n" +
-            "Motor: " + motor.getDirection() + "\n" +
-            "Door : " + door.getPosition() + "\n";
+            "\t State: " + state + "\n" +
+            "\t Motor: " + motor.getDirection() + "\n" +
+            "\t Door : " + door.getPosition() + "\n";
     }
 }
