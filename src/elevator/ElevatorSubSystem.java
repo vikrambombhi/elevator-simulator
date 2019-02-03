@@ -89,15 +89,19 @@ public class ElevatorSubSystem {
 		m.setElevator(elevator.getId());
 		m.setStartingFloor(e.getFloor());
 
+        int diff = 1;
 		if (e.getState() == Elevator.State.MOVING_UP) {
 			m.setDirection(Direction.UP);
 		} else {
 			m.setDirection(Direction.DOWN);
+            diff *= -1;
 		}
 
+        int nextFloor = e.getFloor()+diff;
 		byte[] data = Message.serialize(m);
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[e.getFloor()],
-				SimulationVars.floorPorts[e.getFloor()]);
+        // Message the next floor
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[nextFloor],
+				SimulationVars.floorPorts[nextFloor]);
 		Message.send(sendSocket, sendPacket);
 	}
 

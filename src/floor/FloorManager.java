@@ -29,6 +29,5 @@ public class FloorManager {
         for (Thread t : floorSubsystems) {
             try { t.join(); } catch (InterruptedException e) { }
         }
-        System.out.println("exiting");
 	}
 }
