@@ -74,9 +74,9 @@ public class Elevator {
 	}
 
     public String toString() {
-        return "Elevator: " + id +
-            "State: " + state +
-            "Motor: " + motor.getDirection() +
-            "Door : " + door.getPosition();
+        return "Elevator: " + id + "\n" +
+            "State: " + state + "\n" +
+            "Motor: " + motor.getDirection() + "\n" +
+            "Door : " + door.getPosition() + "\n";
     }
 }
