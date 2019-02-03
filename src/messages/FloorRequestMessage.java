@@ -1,34 +1,41 @@
 package messages;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
-// This is for elevators sending messages to the scheduler
+// this is sent by the elevator to the elevator subsystem to the scheduler
+// this requests a floor. After this message is received by the scheduler,
+// the scheduler will send the elevator in a direction
 public class FloorRequestMessage implements Message, Serializable {
-
-	// floor to go to
-	private int destination, current;
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -3632886442858251411L;
+	private static final long serialVersionUID = -5307796681383023119L;
+
+	private ArrayList<Integer> destinations;
+	private int current;
 
 	public FloorRequestMessage() {
+		destinations = new ArrayList<Integer>();
+	}
+
+	public FloorRequestMessage(ArrayList<Integer> dests) {
+		destinations = dests;
 	}
 
 	/**
-	 * @return the floor
+	 * @return the destinations
 	 */
-	public int getFloor() {
-		return destination;
+	public ArrayList<Integer> getDestinations() {
+		return destinations;
 	}
 
 	/**
-	 * @param floor
-	 *            the floor to set
+	 * @param destinations the destinations to set
 	 */
-	public void setFloor(int floor) {
-		this.destination = floor;
+	public void setDestinations(ArrayList<Integer> destinations) {
+		this.destinations = destinations;
 	}
 
 	/**
@@ -39,8 +46,7 @@ public class FloorRequestMessage implements Message, Serializable {
 	}
 
 	/**
-	 * @param current
-	 *            the current to set
+	 * @param current the current to set
 	 */
 	public void setCurrent(int current) {
 		this.current = current;

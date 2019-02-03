@@ -6,22 +6,21 @@ import java.net.SocketException;
 import java.util.List;
 
 import messages.FloorMetaMessage;
-import messages.FloorRequestMessage;
 import messages.Message;
 
-public class DestinationSender implements Runnable{
-	
+public class DestinationSender implements Runnable {
+
 	private int elevator;
 	private int currentFloor;
 	private List<Integer> passengers;
-	
+
 	private DatagramSocket sendSocket;
 
 	public DestinationSender(int c, int e, List<Integer> p) {
 		elevator = e;
 		passengers = p;
 		currentFloor = c;
-		
+
 		try {
 			sendSocket = new DatagramSocket();
 		} catch (SocketException e1) {
@@ -29,38 +28,47 @@ public class DestinationSender implements Runnable{
 			System.exit(1);
 		}
 	}
-	
+
 	@Override
 	public void run() {
 		DatagramPacket sendPacket;
 		byte[] data;
-		FloorRequestMessage m;
 		FloorMetaMessage f;
 		for (int i = 0; i < passengers.size(); i++) {
 			Integer passenger = passengers.remove(0);
-				
+
+			// send one message to the elevator
+			/*
+			  m = new FloorRequestMessage(); m.setCurrent(currentFloor);
+			  m.setFloor(passenger); data = Message.serialize(m);
+
+
+			sendPacket = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[elevator],
+					SimulationVars.elevatorPorts[elevator]);
+			System.out.println("SENT");
 			//send one message to the elevator
 			m = new FloorRequestMessage();
 			m.setCurrent(currentFloor);
 			m.setFloor(passenger);
 			data = Message.serialize(m);
-			
-			sendPacket = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[elevator], SimulationVars.elevatorPorts[elevator]);
-			Message.send(sendSocket, sendPacket);
 
-			
+			sendPacket = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[elevator], SimulationVars.elevatorPorts[elevator]);
+            System.out.println("SENT");
+			Message.send(sendSocket, sendPacket);
+			*/
+
 			//send 1 message to the floor expecting a passenger
 			f = new FloorMetaMessage(false);
 			f.setDestinationFloor(passenger);
 			f.setElevator(elevator);
 			f.setStartingFloor(currentFloor);
 			data = Message.serialize(f);
-	
-			sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[passenger], SimulationVars.floorPorts[passenger]);
+
+			sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[passenger],
+					SimulationVars.floorPorts[passenger]);
 			Message.send(sendSocket, sendPacket);
-			
-			
-			//small sleep so things don't get too spicy
+
+			// small sleep so things don't get too spicy
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {

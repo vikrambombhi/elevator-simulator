@@ -7,9 +7,10 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 
-import elevator.Elevator;
+import elevator.ElevatorSubSystem;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
+import messages.ElevatorRequestMessage;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
@@ -43,56 +44,58 @@ public class Scheduler {
 		// handle them
 		System.out.println("Scheduler: Waiting for message");
 		Message m = Message.deserialize(Message.receive(recvSock).getData());
-		if (m instanceof FloorRequestMessage) {
+		if (m instanceof ElevatorRequestMessage) {
 			// add request to pick up elevators
-			FloorRequestMessage frm = (FloorRequestMessage) m;
-			queue.add(frm.getFloor());
-			System.out.println("New queue: " + queue.toString());
+			ElevatorRequestMessage erm = (ElevatorRequestMessage) m;
+			queue.add(erm.getOriginFloor());
+			System.out.println("Scheduler: New queue: " + queue.toString());
+			return;
 		} else if (m instanceof FloorArrivalMessage) {
-			// this means that an elevator arrived at a floor, tell it what to
-			// do next. Either open doors, or go up or down
-			// this also means that the elevator's doors are now closing, and there
-			// could be floors to enqueue
-			FloorArrivalMessage am = (FloorArrivalMessage) m;
-			// tell the elevator where to go based on the queue
-			for (int floor : am.getDestinations()) {
-				queue.add(floor);
-				System.out.println("New queue: " + queue.toString());
-			}
-
-			// if am floor is queue.peek(), dequeue and tell the elevator
-			// to stop and open doors
-			if (am.getFloor() == queue.peek()) {
-				queue.remove();
-				sendToElevator(MessageType.STOP);
+			if (queue.isEmpty()) {
 				return;
 			}
-
-			// create a new ElevatorMessage, and send it to the elevator
-			// based on what floor it should go to next
-			// sendToElevator(direction);
-			if (am.getFloor() - queue.peek() > 0) {
-				// go down
-				sendToElevator(MessageType.GODOWN);
-			} else {
-				// go up
-				sendToElevator(MessageType.GOUP);
+			// when an elevator arrives, tell it to go up or down, depending on the queue
+			FloorArrivalMessage FAM = (FloorArrivalMessage) m;
+			System.out.println("Scheduler: elevator arrived at floor " + FAM.getFloor());
+			// BRUH FAM
+			// tell elevator to go up, down, or stop & open
+			sendToElevator(directElevatorTo(FAM.getFloor(), queue.peek()));
+			return;
+		} else if (m instanceof FloorRequestMessage) {
+			// this means that an elevator is leaving a floor
+			// we know what floor buttons were pressed
+			FloorRequestMessage frm = (FloorRequestMessage) m;
+			// enqueue requested floors
+			for (int floor : frm.getDestinations()) {
+				queue.add(floor);
+				System.out.println("Scheduler: New queue: " + queue.toString());
 			}
+			// send the elevator on its way
+			sendToElevator(directElevatorTo(frm.getCurrent(), queue.peek()));
 		}
+	}
 
+	private MessageType directElevatorTo(int currentFloor, int toFloor) {
+		if (currentFloor == toFloor) {
+			return MessageType.STOP;
+		}
+		if (currentFloor - toFloor > 0) {
+			return MessageType.GODOWN;
+		}
+		return MessageType.GOUP;
 	}
 
 	private void sendToElevator(MessageType action) {
-		System.out.println("Sending message of type " + action);
+		System.out.println("Scheduler: Sending message of type " + action);
 		byte[] data = Message.serialize((new ElevatorMessage(action)));
 		InetAddress destHost = null;
 		try {
-			destHost = InetAddress.getByName(Elevator.HOST);
+			destHost = InetAddress.getByName(ElevatorSubSystem.HOST);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		DatagramPacket pack = new DatagramPacket(data, data.length, destHost, Elevator.PORT);
+		DatagramPacket pack = new DatagramPacket(data, data.length, destHost, ElevatorSubSystem.PORT);
 		Message.send(sendSock, pack);
 	}
 

@@ -2,11 +2,13 @@ package messages;
 
 import java.io.Serializable;
 
-// request an elevator when you press an up or down button
+// request an elevator to come pick you up
+// you tell it what floor you are on, and what direction you want to go
+// the scheduler listens for this
 public class ElevatorRequestMessage implements Message, Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2054027936721244415L;
 
@@ -15,30 +17,14 @@ public class ElevatorRequestMessage implements Message, Serializable {
 	}
 
 	private Direction direction;
-	private int destinationFloor;
-    private int originFloor;
+	private int originFloor;
 
-	public ElevatorRequestMessage() {}
-
-	public ElevatorRequestMessage(Direction direction, int destinationFloor, int originFloor) {
-        this.direction = direction;
-        this.destinationFloor = destinationFloor;
-        this.originFloor = originFloor;
-    }
-
-	/**
-	 * @return the destinationFloor
-	 */
-	public int getDesitationFloor() {
-		return destinationFloor;
+	public ElevatorRequestMessage() {
 	}
 
-	/**
-	 * @param destinationFloor
-	 *            the destinationFloor to set
-	 */
-	public void setDestinationFloor(int destinationFloor) {
-		this.destinationFloor = destinationFloor;
+	public ElevatorRequestMessage(Direction direction, int destinationFloor, int originFloor) {
+		this.direction = direction;
+		this.originFloor = originFloor;
 	}
 
 	/**
@@ -49,8 +35,7 @@ public class ElevatorRequestMessage implements Message, Serializable {
 	}
 
 	/**
-	 * @param originFloor
-	 *            the originFloor to set
+	 * @param originFloor the originFloor to set
 	 */
 	public void setOriginFloor(int originFloor) {
 		this.originFloor = originFloor;
@@ -64,8 +49,7 @@ public class ElevatorRequestMessage implements Message, Serializable {
 	}
 
 	/**
-	 * @param direction
-	 *            the direction to set
+	 * @param direction the direction to set
 	 */
 	public void setDirection(Direction direction) {
 		this.direction = direction;
