@@ -13,10 +13,10 @@ clean:
 	rm -r src/**/*.class
 
 elevator: build
-	java elevator.ElevatorSubSystem
+	java -cp src/ elevator.ElevatorSubSystem
 
 scheduler: build
-	java scheduler.Scheduler
+	java -cp src/ scheduler.Scheduler
 
 floor: build
-	java floor.FloorManager
+	java -cp src/ floor.FloorManager
