@@ -62,7 +62,7 @@ public class Scheduler {
 
 			// if am floor is queue.peek(), dequeue and tell the elevator
 			// to stop and open doors
-			if (am.getFloor() == queue.peek()) {
+			if (queue.size() > 0 && am.getFloor() == queue.peek()) {
 				queue.remove();
 				sendToElevator(MessageType.STOP);
 				return;
@@ -71,7 +71,7 @@ public class Scheduler {
 			// create a new ElevatorMessage, and send it to the elevator
 			// based on what floor it should go to next
 			// sendToElevator(direction);
-			if (am.getFloor() - queue.peek() > 0) {
+			if (queue.size() > 0 && am.getFloor() - queue.peek() > 0) {
 				// go down
 				sendToElevator(MessageType.GODOWN);
 			} else {
