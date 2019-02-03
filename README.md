@@ -9,6 +9,19 @@ Members:
 - Connor Poland 101013229
 
 
+
+## HOW TO RUN
+
+1. Import the project into eclipse
+
+2. Open src/elevator/ElevatorSubSystem.java, click run in eclipse
+
+3. Open src/scheduler/Scheduler.java, click run in eclipse
+
+4. Open src/floor/FloorManager.java, click run in eclipse
+
+
+
 ## Changelog
 
 #### 1.00
