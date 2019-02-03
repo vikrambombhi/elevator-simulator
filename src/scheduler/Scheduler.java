@@ -12,7 +12,6 @@ import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
 import messages.FloorArrivalMessage;
-import messages.FloorRequestMessage;
 import messages.Message;
 
 public class Scheduler {
@@ -48,11 +47,6 @@ public class Scheduler {
 			// add request to pick up elevators
 			ElevatorRequestMessage erm = (ElevatorRequestMessage) m;
 			queue.add(erm.getOriginFloor());
-			System.out.println("Scheduler: New queue: " + queue.toString());
-        } else if (m instanceof FloorRequestMessage) {
-			// add request to pick up elevators
-			FloorRequestMessage frm = (FloorRequestMessage) m;
-			queue.add(frm.getFloor());
 			System.out.println("Scheduler: New queue: " + queue.toString());
 		} else if (m instanceof FloorArrivalMessage) {
 			// this means that an elevator arrived at a floor, tell it what to
