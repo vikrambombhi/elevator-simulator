@@ -59,12 +59,22 @@ public class Scheduler {
 			System.out.println("Scheduler: elevator arrived at floor " + FAM.getFloor());
 			// BRUH FAM
 			// tell elevator to go up, down, or stop & open
+			int destination = queue.peek();
+			if (destination == FAM.getFloor()) {
+				System.out.println("Scheduler: Dequeueing floor " + destination);
+				queue.remove();
+			}
 			sendToElevator(directElevatorTo(FAM.getFloor(), queue.peek()));
 			return;
 		} else if (m instanceof FloorRequestMessage) {
 			// this means that an elevator is leaving a floor
 			// we know what floor buttons were pressed
 			FloorRequestMessage frm = (FloorRequestMessage) m;
+			int destination = queue.peek();
+			if (destination == frm.getCurrent()) {
+				System.out.println("Scheduler: Dequeueing floor " + destination);
+				queue.remove();
+			}
 			// enqueue requested floors
 			queue.add(frm.getDestination());
 			System.out.println("Scheduler: New queue: " + queue.toString());
