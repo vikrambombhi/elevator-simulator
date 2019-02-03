@@ -47,7 +47,6 @@ public class DestinationSender implements Runnable {
 
 			sendPacket = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[elevator],
 					SimulationVars.elevatorPorts[elevator]);
-			System.out.println("SENT");
 			// send one message to the elevator
 			m = new FloorRequestMessage();
 			m.setCurrent(currentFloor);
@@ -56,7 +55,6 @@ public class DestinationSender implements Runnable {
 
 			sendPacket = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[elevator],
 					SimulationVars.elevatorPorts[elevator]);
-			System.out.println("SENT");
 			Message.send(sendSocket, sendPacket);
 
 			// send 1 message to the floor expecting a passenger
