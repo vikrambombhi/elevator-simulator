@@ -64,16 +64,21 @@ public class Scheduler {
 				System.out.println("Scheduler: Dequeueing floor " + destination);
 				queue.remove();
 			}
+			if (queue.isEmpty()) {
+				return;
+			}
 			sendToElevator(directElevatorTo(FAM.getFloor(), queue.peek()));
 			return;
 		} else if (m instanceof FloorRequestMessage) {
 			// this means that an elevator is leaving a floor
 			// we know what floor buttons were pressed
 			FloorRequestMessage frm = (FloorRequestMessage) m;
-			int destination = queue.peek();
-			if (destination == frm.getCurrent()) {
-				System.out.println("Scheduler: Dequeueing floor " + destination);
-				queue.remove();
+			if (!queue.isEmpty()) {
+				int destination = queue.peek();
+				if (destination == frm.getCurrent()) {
+					System.out.println("Scheduler: Dequeueing floor " + destination);
+					queue.remove();
+				}
 			}
 			// enqueue requested floors
 			queue.add(frm.getDestination());
