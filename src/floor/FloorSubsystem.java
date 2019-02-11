@@ -133,16 +133,16 @@ public class FloorSubsystem implements Runnable {
 	}
 
 	public void travelMessage(FloorTravelMessage m) {
-		int elevatorToUpdate = ((FloorTravelMessage) m).getElevator();
-		int startingFloor = ((FloorTravelMessage) m).getStartingFloor();
-		if (((FloorTravelMessage) m).getDirection() == Direction.UP) {
-			System.out.println("Floor "+floorNum+": Elevator "+elevatorToUpdate+" travelling UP from floor "+startingFloor+" to floor "+floorNum);
+		int elevatorToUpdate = m.getElevator();
+		int startingFloor = m.getStartingFloor();
+		if (m.getDirection() == Direction.UP) {
+			System.out.printf("Floor %d: Elevator %d travelling UP from floor %d to floor %d\n", floorNum, elevatorToUpdate, startingFloor, floorNum);
 
 			//update direction lamp
 			floor.setDirectionLamp(elevatorToUpdate, directionLampState.UP);
 
 		} else {
-			System.out.println("Floor "+floorNum+": Elevator "+elevatorToUpdate+" travelling DOWN from floor "+startingFloor+" to floor "+floorNum);
+			System.out.printf("Floor %d: Elevator %d travelling DOWN from floor %d to floor %d\n", floorNum, elevatorToUpdate, startingFloor, floorNum);
 
 			//update direction lamp
 			floor.setDirectionLamp(elevatorToUpdate, directionLampState.DOWN);
@@ -153,19 +153,19 @@ public class FloorSubsystem implements Runnable {
 	}
 
 	public void arrivalMessage(FloorArrivalMessage m) {
-		int arrivingElevator = ((FloorArrivalMessage) m).getElevator();
-		Direction direction = ((FloorArrivalMessage) m).getDirection();
-		System.out.println("Floor "+floorNum+": Elevator "+arrivingElevator+" arrived at a floor "+floorNum);
+		int arrivingElevator = m.getElevator();
+		Direction direction = m.getDirection();
+		System.out.printf("Floor %d: Elevator %d arrived at floor %d\n", floorNum, arrivingElevator, floorNum);
 
 		//check to see if anyone is getting off here
 		if (ourPassengers[m.getElevator()] != 0) {
-			System.out.println("Floor "+floorNum+": "+ourPassengers[m.getElevator()]+" passenger(s) arrived at their destination");
+			System.out.printf("Floor %d: %d passenger(s) arrived at their destination\n", floorNum, ourPassengers[m.getElevator()]);
 			ourPassengers[m.getElevator()] = 0;
 		}
 
 		//if a passenger is getting on going UP
 		if(floor.getUpLamp() && direction == Direction.UP) {
-			System.out.println("Floor "+floorNum+": "+goingUp.size()+" passenger(s) going UP stepped into elevator "+arrivingElevator);
+			System.out.printf("Floor %d: %d passenger(s) going UP stepped into the elevator\n", floorNum, goingUp.size(), arrivingElevator);
 			//simulate the passenger pressing their destination
 			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingUp));
 			destinationSenders[m.getElevator()].start();
@@ -177,7 +177,7 @@ public class FloorSubsystem implements Runnable {
 
 		//if a passenger is getting on going DOWN
 		} else if (floor.getDownLamp() && direction == Direction.DOWN) {
-			System.out.println("Floor "+floorNum+": "+goingUp.size()+" passenger(s) going DOWN stepped into elevator "+arrivingElevator);
+			System.out.printf("Floor %d: %d passenger(s) going DOWN stepped into the elevator\n", floorNum, goingUp.size(), arrivingElevator);
 
 			//simulate the passenger pressing their destination
 			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingDown));
