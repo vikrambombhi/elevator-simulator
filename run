@@ -2,7 +2,7 @@
 
 trap 'kill $(jobs -p)' EXIT
 
-cd src || return
+cd build || return
 
 java elevator.ElevatorSubSystem &
 java scheduler.Scheduler &

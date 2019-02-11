@@ -1,22 +1,22 @@
 make: build
 
 build:
-	javac -cp src/:vendor/junit-4.10.jar src/**/*.java
+	javac -cp src/:vendor/junit-4.10.jar src/**/*.java -d build/
 
 run: build
 	./run
 
 test: build
-	java -cp src/:vendor/junit-4.10.jar: org.junit.runner.JUnitCore floor.FloorUnitTests
+	java -cp build/:vendor/junit-4.10.jar: org.junit.runner.JUnitCore floor.FloorUnitTests
 
 clean:
-	rm -r src/**/*.class
+	rm -r build/**/*.class
 
 elevator: build
-	java -cp src/ elevator.ElevatorSubSystem
+	java -cp build/ elevator.ElevatorSubSystem
 
 scheduler: build
-	java -cp src/ scheduler.Scheduler
+	java -cp build/ scheduler.Scheduler
 
 floor: build
-	java -cp src/ floor.FloorManager
+	java -cp build/ floor.FloorManager
