@@ -6,8 +6,6 @@ public class Floor {
 	
 	//static model
 	private int floorNum;
-	private boolean isBotFloor;
-	private boolean isTopFloor;
 	
 	//dynamic model
 	private boolean upLamp;
@@ -15,10 +13,8 @@ public class Floor {
 
 	private directionLampState[] directionLamps;
 
-	public Floor(int floor, boolean isBot, boolean isTop) {
+	public Floor(int floor) {
 		floorNum = floor;
-		isBotFloor = isBot;
-		isTopFloor = isTop;
 		
 		upLamp = false;
 		downLamp = false;

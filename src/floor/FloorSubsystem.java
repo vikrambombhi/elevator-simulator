@@ -40,7 +40,7 @@ public class FloorSubsystem implements Runnable {
 	//list of passengers going up - we store their destination
 	private List<Integer> goingDown;
 
-	public FloorSubsystem(int num, boolean isBot, boolean isTop) {
+	public FloorSubsystem(int num) {
 
 		floorNum = num;
 
@@ -53,7 +53,7 @@ public class FloorSubsystem implements Runnable {
 		}
 
 		//create floor model and sensor arrays
-		floor = new Floor(num, isBot, isTop);
+		floor = new Floor(num);
 		arrivalSensors = new Thread[SimulationVars.numberOfElevators];
 		destinationSenders = new Thread[SimulationVars.numberOfElevators];
 

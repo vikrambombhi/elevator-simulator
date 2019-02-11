@@ -22,7 +22,7 @@ public class FloorManager {
 				isTop = true;
 			}
 
-			floorSubsystems[i] = new Thread(new FloorSubsystem(i, isTop, isBot));
+			floorSubsystems[i] = new Thread(new FloorSubsystem(i));
 			floorSubsystems[i].start();
 		}
 
