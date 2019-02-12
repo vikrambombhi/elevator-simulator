@@ -68,7 +68,7 @@ public class ElevatorSubSystem implements Runnable {
 	/*
 	 * handleMessage runs the corresponding action for the message type.
 	 */
-	private void handleMessage(Message m) {
+	public void handleMessage(Message m) {
 		// State machine switch
 		if (m instanceof ElevatorMessage) {
 			// scheduler tells the elevator to move, stop, open or close.
