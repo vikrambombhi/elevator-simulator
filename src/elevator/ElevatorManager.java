@@ -29,6 +29,13 @@ public class ElevatorManager {
         }
     }
 
+    public void close() {
+        for (int i = 0; i < elevatorSubSystems.length; i ++) {
+            System.out.println("closing " + i);
+            elevatorSubSystems[i].close();
+        }
+    }
+
     public static void main(String args[]) {
         ElevatorManager em = new ElevatorManager(SimulationVars.numberOfElevators);
         em.run();
