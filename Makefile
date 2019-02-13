@@ -1,6 +1,7 @@
 make: build
 
 build:
+	mkdir -p build
 	javac -cp src/:vendor/junit-4.10.jar src/**/*.java -d build/
 
 run: build
@@ -13,7 +14,7 @@ clean:
 	rm -r build/**/*.class
 
 elevator: build
-	java -cp build/ elevator.ElevatorSubSystem
+	java -cp build/ elevator.ElevatorManager
 
 scheduler: build
 	java -cp build/ scheduler.Scheduler
