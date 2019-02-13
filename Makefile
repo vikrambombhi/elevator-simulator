@@ -1,3 +1,5 @@
+.PHONY: build
+
 make: build
 
 build:
@@ -9,7 +11,7 @@ run: build
 
 test: build
 	java -cp build/:vendor/junit-4.10.jar: org.junit.runner.JUnitCore floor.FloorUnitTests
-	java -cp build/:vendor/junit-4.10.jar: org.junit.runner.JUnitCore elevator.ElevatorSubSystemTest
+	java -cp build/:vendor/junit-4.10.jar: org.junit.runner.JUnitCore elevator.ElevatorManagerTest
 
 clean:
 	rm -r build/**/*.class
