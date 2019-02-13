@@ -7,13 +7,16 @@ import java.net.SocketException;
 
 import messages.*;
 import floor.SimulationVars;
+import org.junit.Before;
+import org.junit.Test;
 import junit.framework.TestCase;
 
 public class ElevatorManagerTest extends TestCase {
 
 	private DatagramSocket sendSocket;
 
-	private void setup() {
+    @Before
+	public void setUp() {
 		try {
 			sendSocket = new DatagramSocket();
 		} catch (SocketException se) {
@@ -22,15 +25,17 @@ public class ElevatorManagerTest extends TestCase {
 		}
 	}
 
-	private void teardown() {
+	public void tearDown() {
 		sendSocket.close();
 	}
 
+    @Test
     public void testElevatorManagerElevatorsCreated() {
         ElevatorManager manager = new ElevatorManager(9);
         assertEquals(9, manager.getElevatorSubsystems().length);
     }
 
+    @Test
     public void testElevatorMessageStateMachine() {
         ElevatorManager manager = new ElevatorManager(1);
 		ElevatorSubSystem subsystem = manager.getElevatorSubsystems()[0];
@@ -53,6 +58,7 @@ public class ElevatorManagerTest extends TestCase {
         assertEquals(Elevator.State.MOVING_DOWN, subsystem.getElevator().getState());
     }
 
+    @Test
     public void testElevatorMessageIsIndependent() {
         ElevatorManager manager = new ElevatorManager(5);
 		Thread t = new Thread(new Runnable() {
@@ -95,6 +101,7 @@ public class ElevatorManagerTest extends TestCase {
         assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[4].getElevator().getState());
     }
 
+    @Test
     public void testFloorArrivalMessage() {
         ElevatorManager manager = new ElevatorManager(3);
 		Thread t = new Thread(new Runnable() {
