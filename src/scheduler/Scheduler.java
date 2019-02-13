@@ -14,6 +14,7 @@ import messages.ElevatorRequestMessage;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
+import floor.SimulationVars;
 
 public class Scheduler {
 	public static String HOST = "127.0.0.1";
@@ -101,15 +102,11 @@ public class Scheduler {
 
 	private void sendToElevator(MessageType action) {
 		System.out.println("Scheduler: Sending message of type " + action);
+		// TODO set the correct target elevator in the message
+		int targetElevator = 0;
 		byte[] data = Message.serialize((new ElevatorMessage(action)));
-		InetAddress destHost = null;
-		try {
-			destHost = InetAddress.getByName(ElevatorSubSystem.HOST);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-		DatagramPacket pack = new DatagramPacket(data, data.length, destHost, ElevatorSubSystem.PORT);
+		DatagramPacket pack = new DatagramPacket(data, data.length,
+				SimulationVars.elevatorAddresses[targetElevator], SimulationVars.elevatorPorts[targetElevator]);
 		Message.send(sendSock, pack);
 	}
 
