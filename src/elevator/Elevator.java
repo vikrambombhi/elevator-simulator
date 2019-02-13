@@ -11,6 +11,7 @@ import messages.*;
  */
 public class Elevator {
 
+	// State is the possible states that the elevator can be in.
 	public enum State {
 		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED
 	}
@@ -45,6 +46,10 @@ public class Elevator {
 
 	public State getState() {
 		return state;
+	}
+
+	public boolean isMoving() {
+		return state == State.MOVING_UP || state == State.MOVING_DOWN;
 	}
 
 	/*

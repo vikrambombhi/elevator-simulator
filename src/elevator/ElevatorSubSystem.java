@@ -14,21 +14,16 @@ import messages.ElevatorRequestMessage.Direction;
 /*
  * ElevatorSubSystem is the subsystem placed in each elevator.
  */
-public class ElevatorSubSystem {
-	// State is the possible states that the elevator can be in.
-	public static String HOST = "127.0.0.1";
-	public static short PORT = 4000;
-
-	// TODO: support more than 1 elevator
+public class ElevatorSubSystem implements Runnable {
 	private Elevator elevator;
 	// Communication sockets
 	private DatagramSocket sendSocket, receiveSocket;
 
-	public ElevatorSubSystem() {
-		elevator = new Elevator(0);
+	public ElevatorSubSystem(int id) {
+		elevator = new Elevator(id);
 		try {
 			sendSocket = new DatagramSocket();
-			receiveSocket = new DatagramSocket(PORT);
+			receiveSocket = new DatagramSocket(SimulationVars.elevatorPorts[id]);
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
@@ -38,7 +33,10 @@ public class ElevatorSubSystem {
 	/*
 	 * run starts the elevator subsystem and awaits for messages.
 	 */
+	@Override
 	public void run() {
+		int id = elevator.getId();
+		System.out.printf("ElevatorSubSystem %d: Starting on port %d\n", id, SimulationVars.elevatorPorts[id]);
 		try {
 			while (true) {
 				DatagramPacket receivePacket = Message.receive(receiveSocket);
@@ -61,6 +59,13 @@ public class ElevatorSubSystem {
 	}
 
 	/*
+	 * returns the elevator in the system. Used for tests.
+	 */
+	public Elevator getElevator() {
+		return elevator;
+	}
+
+	/*
 	 * handleMessage runs the corresponding action for the message type.
 	 */
 	private void handleMessage(Message m) {
@@ -69,8 +74,8 @@ public class ElevatorSubSystem {
 			// scheduler tells the elevator to move, stop, open or close.
 			elevator.handleElevatorMessage((ElevatorMessage) m);
 
-			if (isMoving(elevator)) {
-				sendTravelMessage(elevator);
+			if (elevator.isMoving()) {
+				sendTravelMessage();
 			}
 		} else if (m instanceof FloorRequestMessage) {
 			forwardFloorRequest((FloorRequestMessage) m);
@@ -80,41 +85,31 @@ public class ElevatorSubSystem {
 		}
 	}
 
-	private boolean isMoving(Elevator e) {
-		return e.getState() == Elevator.State.MOVING_UP || e.getState() == Elevator.State.MOVING_DOWN;
-	}
-
-	private void sendTravelMessage(Elevator e) {
+	private void sendTravelMessage() {
 		FloorTravelMessage m = new FloorTravelMessage();
 		m.setElevator(elevator.getId());
-		m.setStartingFloor(e.getFloor());
+		m.setStartingFloor(elevator.getFloor());
 
-        int diff = 1;
-		if (e.getState() == Elevator.State.MOVING_UP) {
+		int diff = 1;
+		if (elevator.getState() == Elevator.State.MOVING_UP) {
 			m.setDirection(Direction.UP);
 		} else {
 			m.setDirection(Direction.DOWN);
-            diff *= -1;
+			diff *= -1;
 		}
 
-        int nextFloor = e.getFloor()+diff;
+		int nextFloor = elevator.getFloor()+diff;
 		byte[] data = Message.serialize(m);
-        // Message the next floor
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[nextFloor],
-				SimulationVars.floorPorts[nextFloor]);
+		// Message the next floor
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
+                SimulationVars.floorAddresses[nextFloor], SimulationVars.floorPorts[nextFloor]);
 		Message.send(sendSocket, sendPacket);
 	}
 
 	private void forwardFloorRequest(FloorRequestMessage m) {
 		byte[] data = Message.serialize(m);
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress,
-				SimulationVars.schedulerPort);
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
+                SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
 		Message.send(sendSocket, sendPacket);
-	}
-
-	public static void main(String args[]) {
-		System.out.println("ElevatorSubSystem: Starting on port 4000");
-		ElevatorSubSystem e = new ElevatorSubSystem();
-		e.run();
 	}
 }
