@@ -28,9 +28,8 @@ public class ElevatorManagerTest extends TestCase {
 
 	@Test
 	public void testElevatorCreation() {
-		ElevatorManager manager = new ElevatorManager(9);
-		assertEquals(9, manager.getElevatorSubsystems().length);
-		manager.close();
+		ElevatorManager manager = new ElevatorManager(3);
+		assertEquals(3, manager.getElevatorSubsystems().length);
 	}
 
 	@Test
@@ -54,13 +53,11 @@ public class ElevatorManagerTest extends TestCase {
 		// Test GODOWN
 		subsystem.handleMessage(new ElevatorMessage(messages.ElevatorMessage.MessageType.GODOWN));
 		assertEquals(Elevator.State.MOVING_DOWN, subsystem.getElevator().getState());
-
-		manager.close();
 	}
 
 	@Test
 	public void testElevatorMessageIsIndependent() {
-		ElevatorManager manager = new ElevatorManager(5);
+		ElevatorManager manager = new ElevatorManager(3);
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -74,16 +71,14 @@ public class ElevatorManagerTest extends TestCase {
 		// Test only elevator 3 changes state
 		byte[] data = Message.serialize(new ElevatorMessage(messages.ElevatorMessage.MessageType.GOUP));
 		DatagramPacket packet = new DatagramPacket(data, data.length,
-				SimulationVars.elevatorAddresses[3], SimulationVars.elevatorPorts[3]);
+				SimulationVars.elevatorAddresses[2], SimulationVars.elevatorPorts[2]);
 		Message.send(sendSocket, packet);
 
 		try { Thread.sleep(500); } catch (InterruptedException e) { }
 
 		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[0].getElevator().getState());
 		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[1].getElevator().getState());
-		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[2].getElevator().getState());
-		assertEquals(Elevator.State.MOVING_UP, elevatorSubSystems[3].getElevator().getState());
-		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[4].getElevator().getState());
+		assertEquals(Elevator.State.MOVING_UP, elevatorSubSystems[2].getElevator().getState());
 
 		// Test only elevator 1 changes state
 		elevatorSubSystems[1].getElevator().setFloor(1);
@@ -96,9 +91,7 @@ public class ElevatorManagerTest extends TestCase {
 
 		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[0].getElevator().getState());
 		assertEquals(Elevator.State.MOVING_DOWN, elevatorSubSystems[1].getElevator().getState());
-		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[2].getElevator().getState());
-		assertEquals(Elevator.State.MOVING_UP, elevatorSubSystems[3].getElevator().getState());
-		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, elevatorSubSystems[4].getElevator().getState());
+		assertEquals(Elevator.State.MOVING_UP, elevatorSubSystems[2].getElevator().getState());
 
 		t.interrupt();
 		manager.close();
@@ -124,7 +117,7 @@ public class ElevatorManagerTest extends TestCase {
 
 		byte[] data = Message.serialize(fm);
 		DatagramPacket packet = new DatagramPacket(data, data.length,
-				SimulationVars.elevatorAddresses[1], SimulationVars.elevatorPorts[1]);
+				SimulationVars.elevatorAddresses[2], SimulationVars.elevatorPorts[2]);
 		Message.send(sendSocket, packet);
 
 		try { Thread.sleep(500); } catch (InterruptedException e) { }
