@@ -38,7 +38,7 @@ public class ElevatorSubSystem implements Runnable {
 		int id = elevator.getId();
 		System.out.printf("ElevatorSubSystem %d: Starting on port %d\n", id, SimulationVars.elevatorPorts[id]);
 		try {
-			while (true) {
+			while (!Thread.currentThread().isInterrupted()) {
 				DatagramPacket receivePacket = Message.receive(receiveSocket);
 				Message m = Message.deserialize(receivePacket.getData());
 				handleMessage(m);

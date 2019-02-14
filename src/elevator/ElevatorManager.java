@@ -5,6 +5,7 @@ import floor.SimulationVars;
 public class ElevatorManager {
 
     private ElevatorSubSystem[] elevatorSubSystems;
+    private Thread[] elevatorThreads;
 
     ElevatorManager(int numberOfElevators) {
         elevatorSubSystems = new ElevatorSubSystem[numberOfElevators];
@@ -18,7 +19,7 @@ public class ElevatorManager {
     }
 
     public void run() {
-        Thread[] elevatorThreads = new Thread[elevatorSubSystems.length];
+        elevatorThreads = new Thread[elevatorSubSystems.length];
         for (int i = 0; i < elevatorSubSystems.length; i ++) {
             Thread t = new Thread(elevatorSubSystems[i]);
             t.start();
@@ -33,6 +34,7 @@ public class ElevatorManager {
         for (int i = 0; i < elevatorSubSystems.length; i ++) {
             System.out.println("closing " + i);
             elevatorSubSystems[i].close();
+            elevatorThreads[i].interrupt();
         }
     }
 
