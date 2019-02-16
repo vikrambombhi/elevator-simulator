@@ -1,3 +1,5 @@
+.PHONY: build
+
 make: build
 
 build:

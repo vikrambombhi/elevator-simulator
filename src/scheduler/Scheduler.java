@@ -123,21 +123,21 @@ public class Scheduler {
         // update elevator model
         elevators[m.getElevator()].setFloor(m.getFloor());
 
-        if (queues[0].isEmpty()) {
+        if (queues[m.getElevator()].isEmpty()) {
             return;
         }
         // when an elevator arrives, tell it to go up or down, depending on the queues
         System.out.println("Scheduler: elevator arrived at floor " + m.getFloor());
         // tell elevator to go up, down, or stop & open
-        int destination = queues[0].peek();
+        int destination = queues[m.getElevator()].peek();
         if (destination == m.getFloor()) {
             System.out.println("Scheduler: Dequeuesing floor " + destination);
-            queues[0].remove();
+            queues[m.getElevator()].remove();
         }
-        if (queues[0].isEmpty()) {
+        if (queues[m.getElevator()].isEmpty()) {
             return;
         }
-        sendToElevator(directElevatorTo(m.getFloor(), queues[0].peek()));
+        sendToElevator(directElevatorTo(m.getFloor(), queues[m.getElevator()].peek()));
         return;
     }
 
