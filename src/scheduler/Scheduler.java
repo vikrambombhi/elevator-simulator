@@ -7,7 +7,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 
-import elevator.ElevatorSubSystem;
+import elevator.Elevator;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
@@ -21,7 +21,8 @@ public class Scheduler {
 	public static short PORT = 3000;
 
 	private DatagramSocket recvSock, sendSock;
-	private LinkedList<Integer> queue;
+	private LinkedList<Integer>[] queues;
+	private Elevator[] elevators;
 
 	public Scheduler() {
 		try {
@@ -31,13 +32,21 @@ public class Scheduler {
 			recvSock = new DatagramSocket(PORT);
 			sendSock = new DatagramSocket();
 
+			elevators = new Elevator[SimulationVars.numberOfElevators];
+			for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
+				elevators[i] = new Elevator(i);
+			}
+
 			// to test socket timeout (2 seconds)
 			// receiveSocket.setSoTimeout(2000);
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
 		}
-		queue = new LinkedList<Integer>();
+		queues = new LinkedList[SimulationVars.numberOfElevators];
+		for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
+			queues[i] = new LinkedList<Integer>();
+		}
 	}
 
 	public void schedule() {
@@ -46,48 +55,58 @@ public class Scheduler {
 		System.out.println("Scheduler: Waiting for message");
 		Message m = Message.deserialize(Message.receive(recvSock).getData());
 		if (m instanceof ElevatorRequestMessage) {
-			// add request to pick up elevators
-			ElevatorRequestMessage erm = (ElevatorRequestMessage) m;
-			queue.add(erm.getOriginFloor());
-			System.out.println("Scheduler: New queue: " + queue.toString());
-			return;
+			handleElevatorRequest((ElevatorRequestMessage) m);
 		} else if (m instanceof FloorArrivalMessage) {
-			if (queue.isEmpty()) {
-				return;
-			}
-			// when an elevator arrives, tell it to go up or down, depending on the queue
-			FloorArrivalMessage FAM = (FloorArrivalMessage) m;
-			System.out.println("Scheduler: elevator arrived at floor " + FAM.getFloor());
-			// BRUH FAM
-			// tell elevator to go up, down, or stop & open
-			int destination = queue.peek();
-			if (destination == FAM.getFloor()) {
-				System.out.println("Scheduler: Dequeueing floor " + destination);
-				queue.remove();
-			}
-			if (queue.isEmpty()) {
-				return;
-			}
-			sendToElevator(directElevatorTo(FAM.getFloor(), queue.peek()));
-			return;
+			handleFloorArrival((FloorArrivalMessage) m);
 		} else if (m instanceof FloorRequestMessage) {
-			// this means that an elevator is leaving a floor
-			// we know what floor buttons were pressed
-			FloorRequestMessage frm = (FloorRequestMessage) m;
-			if (!queue.isEmpty()) {
-				int destination = queue.peek();
-				if (destination == frm.getCurrent()) {
-					System.out.println("Scheduler: Dequeueing floor " + destination);
-					queue.remove();
-				}
-			}
-			// enqueue requested floors
-			queue.add(frm.getDestination());
-			System.out.println("Scheduler: New queue: " + queue.toString());
-
-			// send the elevator on its way
-			sendToElevator(directElevatorTo(frm.getCurrent(), queue.peek()));
+			handleFloorRequest((FloorRequestMessage) m);
 		}
+	}
+
+	private void handleElevatorRequest(ElevatorRequestMessage m) {
+		// add request to pick up elevators
+		queues[0].add(m.getOriginFloor());
+		System.out.println("Scheduler: New queues: " + queues[0].toString());
+	}
+
+	private void handleFloorArrival(FloorArrivalMessage m) {
+		// update elevator model
+		elevators[m.getElevator()].setFloor(m.getFloor());
+
+		if (queues[0].isEmpty()) {
+			return;
+		}
+		// when an elevator arrives, tell it to go up or down, depending on the queues
+		System.out.println("Scheduler: elevator arrived at floor " + m.getFloor());
+		// tell elevator to go up, down, or stop & open
+		int destination = queues[0].peek();
+		if (destination == m.getFloor()) {
+			System.out.println("Scheduler: Dequeuesing floor " + destination);
+			queues[0].remove();
+		}
+		if (queues[0].isEmpty()) {
+			return;
+		}
+		sendToElevator(directElevatorTo(m.getFloor(), queues[0].peek()));
+		return;
+	}
+
+	private void handleFloorRequest(FloorRequestMessage m) {
+		// this means that an elevator is leaving a floor
+		// we know what floor buttons were pressed
+		if (!queues[0].isEmpty()) {
+			int destination = queues[0].peek();
+			if (destination == m.getCurrent()) {
+				System.out.println("Scheduler: Dequeuesing floor " + destination);
+				queues[0].remove();
+			}
+		}
+		// enqueues requested floors
+		queues[0].add(m.getDestination());
+		System.out.println("Scheduler: New queues: " + queues[0].toString());
+
+		// send the elevator on its way
+		sendToElevator(directElevatorTo(m.getCurrent(), queues[0].peek()));
 	}
 
 	private MessageType directElevatorTo(int currentFloor, int toFloor) {
@@ -108,6 +127,17 @@ public class Scheduler {
 		DatagramPacket pack = new DatagramPacket(data, data.length,
 				SimulationVars.elevatorAddresses[targetElevator], SimulationVars.elevatorPorts[targetElevator]);
 		Message.send(sendSock, pack);
+
+		switch(action) {
+			case GOUP:
+				elevators[targetElevator].setState(Elevator.State.MOVING_UP);
+				break;
+			case GODOWN:
+				elevators[targetElevator].setState(Elevator.State.MOVING_DOWN);
+				break;
+			// TODO is it okay to leave to ignore stop state? can we just assumed after it's stopped,
+			// the elevator will continue in the current direction?
+		}
 	}
 
 	public void close() {
