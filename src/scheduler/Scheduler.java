@@ -7,6 +7,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import elevator.Elevator;
 import messages.ElevatorMessage;
@@ -158,6 +160,21 @@ public class Scheduler {
         // send the elevator on its way
         sendToElevator(directElevatorTo(m.getCurrent(), queues[0].peek()), m.getElevator());
     }
+
+	private void addAndSort(int elevatorId, int floor) {
+		queues[elevatorId].add(floor);
+		switch (elevators[elevatorId].getState()) {
+			case MOVING_UP:
+				Collections.sort(queues[elevatorId]);
+			case MOVING_DOWN:
+				Collections.sort(queues[elevatorId], new Comparator<Integer>() {
+					@Override
+					public int compare(Integer int1, Integer int2) {
+						return int2 - int1;
+					}
+				});
+		}
+	}
 
     private MessageType directElevatorTo(int currentFloor, int toFloor) {
         if (currentFloor == toFloor) {
