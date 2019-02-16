@@ -168,6 +168,7 @@ public class Scheduler {
 		switch (elevators[elevatorId].getState()) {
 			case MOVING_UP:
 				Collections.sort(queues[elevatorId]);
+				break;
 			case MOVING_DOWN:
 				Collections.sort(queues[elevatorId], new Comparator<Integer>() {
 					@Override
@@ -175,6 +176,7 @@ public class Scheduler {
 						return int2 - int1;
 					}
 				});
+				break;
 		}
 	}
 
