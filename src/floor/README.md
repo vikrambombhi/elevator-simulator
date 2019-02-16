@@ -17,8 +17,7 @@ ArrivalSensor:
 RequestSimulator:
 	A thread that sleeps between firing off ElevatorRequestMessage to the scheduler and FloorMetaMessages to 
 	the floorSubystem of origin.
-		-in future iterations it will rely on an input file but for now it has a hard coded sequences of
-			requests.
+		- supports input file requests from input.txt
 			
 DestinationSender:
 	Takes a list of passengers and their destinations and shoots them off to the respective elevator. This is run
