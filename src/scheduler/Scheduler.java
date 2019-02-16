@@ -139,7 +139,7 @@ public class Scheduler {
         if (queues[m.getElevator()].isEmpty()) {
             return;
         }
-        sendToElevator(directElevatorTo(m.getFloor(), queues[m.getElevator()].peek()));
+        sendToElevator(directElevatorTo(m.getFloor(), queues[m.getElevator()].peek()), m.getElevator());
         return;
     }
 
@@ -161,6 +161,8 @@ public class Scheduler {
         sendToElevator(directElevatorTo(m.getCurrent(), queues[0].peek()), m.getElevator());
     }
 
+	// addAndSort addes the requested floor to the elevator's queue and sorts to stop
+	// on floors on the way.
 	private void addAndSort(int elevatorId, int floor) {
 		queues[elevatorId].add(floor);
 		switch (elevators[elevatorId].getState()) {
