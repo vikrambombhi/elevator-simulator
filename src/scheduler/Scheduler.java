@@ -182,6 +182,7 @@ public class Scheduler {
 				});
 				break;
 		}
+        System.out.println("Scheduler: Elevator " + elevatorId +  " queue: " + queues[elevatorId].toString());
 	}
 
     private MessageType directElevatorTo(int currentFloor, int toFloor) {
