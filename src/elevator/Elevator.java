@@ -48,6 +48,10 @@ public class Elevator {
 		return state;
 	}
 
+	public void setState(State s) {
+		state = s;
+	}
+
 	public boolean isMoving() {
 		return state == State.MOVING_UP || state == State.MOVING_DOWN;
 	}
