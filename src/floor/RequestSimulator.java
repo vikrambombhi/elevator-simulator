@@ -39,12 +39,16 @@ public class RequestSimulator implements Runnable{
 			String line;
 			while ((line = br.readLine()) != null) {
 				String[] parts = line.split(" ");
+				String timeOfReq = parts[0];
+				String originFloor = parts[1];
+				String direction = parts[2];
+				String destination = parts[3];
 
 				//our next message
-				if (Integer.parseInt(parts[1]) == floorNum) {
+				if (Integer.parseInt(originFloor) == floorNum) {
 					//make the messages
 					m = new ElevatorRequestMessage();
-					if (parts[2].equals("Up")) {
+					if (direction.equals("Up")) {
 						m.setDirection(Direction.UP);
 					} else {
 						m.setDirection(Direction.DOWN);
@@ -55,19 +59,18 @@ public class RequestSimulator implements Runnable{
 					
 					f = new FloorMetaMessage(true);
 					f.setStartingFloor(floorNum);
-					f.setDestinationFloor(Integer.parseInt(parts[3]));
+					f.setDestinationFloor(Integer.parseInt(destination));
 					byte[] metaData = Message.serialize(f);
 					DatagramPacket metaPacket = new DatagramPacket(metaData, metaData.length, SimulationVars.floorAddresses[floorNum], SimulationVars.floorPorts[floorNum]);
 					
 					//sleep until its time to send
 					try {
-						Thread.sleep(getSleepTime(parts[0]));
+						Thread.sleep(getSleepTime(timeOfReq));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 					
 					//send the messages
-					System.out.println("hello");
 					Message.send(sendSocket, schedulerPacket);
 					Message.send(sendSocket, metaPacket);
 				}
