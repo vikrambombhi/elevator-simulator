@@ -17,6 +17,7 @@ public class RequestSimulator implements Runnable{
 	private DatagramSocket sendSocket;
 	private int floorNum;
 	private int time;
+	private File file;
 
 	public RequestSimulator(int f) {
 		try {
@@ -27,76 +28,41 @@ public class RequestSimulator implements Runnable{
 		}
 
 		floorNum = f;
-		time = 0;
+		time = -1;
+		file = new File(SimulationVars.inputFile);
 	}
 
-	@Override
+	@Override	
 	public void run() {
+		int nextRequest;
 		ElevatorRequestMessage m;
 		FloorMetaMessage f;
+		byte[] schedulerData;
+		byte[] floorData;
+		DatagramPacket schedulerPacket;
+		DatagramPacket floorPacket;
 		
-		try (BufferedReader br = new BufferedReader(new FileReader(SimulationVars.inputFile))) {
-			String line;
-			while ((line = br.readLine()) != null) {
-				String[] parts = line.split(" ");
-				String timeOfReq = parts[0];
-				String originFloor = parts[1];
-				String direction = parts[2];
-				String destination = parts[3];
-
-				//our next message
-				if (Integer.parseInt(originFloor) == floorNum) {
-					//make the messages
-					m = new ElevatorRequestMessage();
-					if (direction.equals("Up")) {
-						m.setDirection(Direction.UP);
-					} else {
-						m.setDirection(Direction.DOWN);
-					}
-					m.setOriginFloor(floorNum);
-					byte[] schedulerData = Message.serialize(m);
-					DatagramPacket schedulerPacket = new DatagramPacket(schedulerData, schedulerData.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
-					
-					f = new FloorMetaMessage(true);
-					f.setStartingFloor(floorNum);
-					f.setDestinationFloor(Integer.parseInt(destination));
-					byte[] metaData = Message.serialize(f);
-					DatagramPacket metaPacket = new DatagramPacket(metaData, metaData.length, SimulationVars.floorAddresses[floorNum], SimulationVars.floorPorts[floorNum]);
-					
-					//sleep until its time to send
-					try {
-						Thread.sleep(getSleepTime(timeOfReq));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					
-					//send the messages
-					Message.send(sendSocket, schedulerPacket);
-					Message.send(sendSocket, metaPacket);
-				}
+		while ((nextRequest = file.getNextRequestTime(time, floorNum)) != -1) {
+			//prep next messages
+			f = file.getNextMetaMessage(nextRequest, floorNum);
+			floorData = Message.serialize(f);
+			floorPacket = new DatagramPacket(floorData, floorData.length, SimulationVars.floorAddresses[floorNum], SimulationVars.floorPorts[floorNum]);
+			
+			m = file.getRequestMessage(nextRequest, floorNum);
+			schedulerData = Message.serialize(m);
+			schedulerPacket = new DatagramPacket(schedulerData, schedulerData.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
+			
+			//sleep until 
+			try {
+				Thread.sleep((nextRequest - time)/SimulationVars.timeScalar);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			time = nextRequest;
+			
+			//send messages
+			Message.send(sendSocket, floorPacket);
+			Message.send(sendSocket, schedulerPacket);
 		}
-	}
-	
-	public int getSleepTime(String t) {
-		String[] parts = t.split(":");
-		int sleepTime = 0;
-		//add milliseconds
-		sleepTime += Integer.parseInt(parts[2].substring(3));
-		//add seconds
-		sleepTime += (Integer.parseInt(parts[2].substring(0, 2))*1000);
-		//add mins 
-		sleepTime += (Integer.parseInt(parts[1])*60000);
-		//add hours
-		sleepTime += (Integer.parseInt(parts[0])*3600000);
-		
-		//time until we reach the time of request
-		sleepTime = sleepTime - time;
-		//when the thread wakes up from this message it will be.. time + time slept
-		time = sleepTime + time;
-		
-		return sleepTime/SimulationVars.timeScalar;
 	}
 }
