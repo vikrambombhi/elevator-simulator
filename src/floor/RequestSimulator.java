@@ -32,7 +32,7 @@ public class RequestSimulator implements Runnable{
 		file = new File(SimulationVars.inputFile);
 	}
 
-	@Override	
+	@Override
 	public void run() {
 		int nextRequest;
 		ElevatorRequestMessage m;
