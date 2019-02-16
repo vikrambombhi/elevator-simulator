@@ -68,14 +68,14 @@ public class Scheduler {
 
     private void handleElevatorRequest(ElevatorRequestMessage m) {
         // add request to pick up elevators
-        LinkedList<Integer> emptyQueue = null;
+        Integer emptyQueueIndex = null;
         for (int i = 0; i < queues.length; i ++) {
             if (queues[i].isEmpty()) {
-                emptyQueue = queues[i];
+                emptyQueueIndex = i;
             }
         }
-        if (emptyQueue != null) {
-            emptyQueue.add(m.getOriginFloor());
+        if (emptyQueueIndex != null) {
+            addAndSort(emptyQueueIndex, m.getOriginFloor());
             return;
         }
 
@@ -113,52 +113,56 @@ public class Scheduler {
 
         // find smallest queue size
         LinkedList<Integer> smallestQueue = queues[0];
+        Integer smallestQueueIndex = null;
         for (int i = 1; i < queues.length; i ++) {
             if (queues[i].size() < smallestQueue.size()) {
                 smallestQueue = queues[i];
+                smallestQueueIndex = i;
             }
         }
-        smallestQueue.add(m.getOriginFloor());
+        addAndSort(smallestQueueIndex, m.getOriginFloor());
     }
 
     private void handleFloorArrival(FloorArrivalMessage m) {
         // update elevator model
         elevators[m.getElevator()].setFloor(m.getFloor());
+        LinkedList<Integer> elevatorQueue = queues[m.getElevator()];
 
-        if (queues[m.getElevator()].isEmpty()) {
+        if (elevatorQueue.isEmpty()) {
             return;
         }
         // when an elevator arrives, tell it to go up or down, depending on the queues
         System.out.println("Scheduler: elevator arrived at floor " + m.getFloor());
         // tell elevator to go up, down, or stop & open
-        int destination = queues[m.getElevator()].peek();
+        int destination = elevatorQueue.peek();
         if (destination == m.getFloor()) {
             System.out.println("Scheduler: Dequeuesing floor " + destination);
-            queues[m.getElevator()].remove();
+            elevatorQueue.remove();
         }
-        if (queues[m.getElevator()].isEmpty()) {
+        if (elevatorQueue.isEmpty()) {
             return;
         }
-        sendToElevator(directElevatorTo(m.getFloor(), queues[m.getElevator()].peek()), m.getElevator());
+        sendToElevator(directElevatorTo(m.getFloor(), elevatorQueue.peek()), m.getElevator());
         return;
     }
 
     private void handleFloorRequest(FloorRequestMessage m) {
         // this means that an elevator is leaving a floor
         // we know what floor buttons were pressed
-        if (!queues[m.getElevator()].isEmpty()) {
-            int destination = queues[m.getElevator()].peek();
+        LinkedList<Integer> elevatorQueue = queues[m.getElevator()];
+        if (!elevatorQueue.isEmpty()) {
+            int destination = elevatorQueue.peek();
             if (destination == m.getCurrent()) {
                 System.out.println("Scheduler: Dequeuesing floor " + destination);
-                queues[m.getElevator()].remove();
+                elevatorQueue.remove();
             }
         }
         // enqueues requested floors
-        queues[m.getElevator()].add(m.getDestination());
-        System.out.println("Scheduler: New queues: " + queues[m.getElevator()].toString());
+        addAndSort(m.getElevator(), m.getDestination());
+        System.out.println("Scheduler: New queues: " + elevatorQueue.toString());
 
         // send the elevator on its way
-        sendToElevator(directElevatorTo(m.getCurrent(), queues[0].peek()), m.getElevator());
+        sendToElevator(directElevatorTo(m.getCurrent(), elevatorQueue.peek()), m.getElevator());
     }
 
 	// addAndSort addes the requested floor to the elevator's queue and sorts to stop
