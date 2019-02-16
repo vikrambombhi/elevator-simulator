@@ -144,19 +144,19 @@ public class Scheduler {
     private void handleFloorRequest(FloorRequestMessage m) {
         // this means that an elevator is leaving a floor
         // we know what floor buttons were pressed
-        if (!queues[0].isEmpty()) {
-            int destination = queues[0].peek();
+        if (!queues[m.getElevator()].isEmpty()) {
+            int destination = queues[m.getElevator()].peek();
             if (destination == m.getCurrent()) {
                 System.out.println("Scheduler: Dequeuesing floor " + destination);
-                queues[0].remove();
+                queues[m.getElevator()].remove();
             }
         }
         // enqueues requested floors
-        queues[0].add(m.getDestination());
-        System.out.println("Scheduler: New queues: " + queues[0].toString());
+        queues[m.getElevator()].add(m.getDestination());
+        System.out.println("Scheduler: New queues: " + queues[m.getElevator()].toString());
 
         // send the elevator on its way
-        sendToElevator(directElevatorTo(m.getCurrent(), queues[0].peek()));
+        sendToElevator(directElevatorTo(m.getCurrent(), queues[0].peek()), m.getElevator());
     }
 
     private MessageType directElevatorTo(int currentFloor, int toFloor) {
@@ -169,10 +169,9 @@ public class Scheduler {
         return MessageType.GOUP;
     }
 
-    private void sendToElevator(MessageType action) {
+    private void sendToElevator(MessageType action, int targetElevator) {
         System.out.println("Scheduler: Sending message of type " + action);
         // TODO set the correct target elevator in the message
-        int targetElevator = 0;
         byte[] data = Message.serialize((new ElevatorMessage(action)));
         DatagramPacket pack = new DatagramPacket(data, data.length,
                 SimulationVars.elevatorAddresses[targetElevator], SimulationVars.elevatorPorts[targetElevator]);

@@ -13,7 +13,7 @@ public class FloorRequestMessage implements Message, Serializable {
 	 */
 	private static final long serialVersionUID = -5307796681383023119L;
 
-	private int current, destination;
+	private int current, destination, elevator;
 
 	public FloorRequestMessage() {
 	}
@@ -44,6 +44,14 @@ public class FloorRequestMessage implements Message, Serializable {
 	 */
 	public void setDestination(int destination) {
 		this.destination = destination;
+	}
+
+	public int getElevator() {
+		return this.elevator;
+	}
+
+	public void setElevator(int elevator) {
+		this.elevator = elevator;
 	}
 
 }
