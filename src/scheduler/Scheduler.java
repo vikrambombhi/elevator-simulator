@@ -132,11 +132,11 @@ public class Scheduler {
             return;
         }
         // when an elevator arrives, tell it to go up or down, depending on the queues
-        System.out.println("Scheduler: elevator arrived at floor " + m.getFloor());
+        System.out.printf("Scheduler: Elevator %d arrived at floor %d\n", m.getElevator(), m.getFloor());
         // tell elevator to go up, down, or stop & open
         int destination = elevatorQueue.peek();
         if (destination == m.getFloor()) {
-            System.out.println("Scheduler: Dequeuesing floor " + destination);
+            System.out.printf("Scheduler: Elevator %d dequeuesing floor %d\n", m.getElevator(), destination);
             elevatorQueue.remove();
         }
         if (elevatorQueue.isEmpty()) {
@@ -153,13 +153,13 @@ public class Scheduler {
         if (!elevatorQueue.isEmpty()) {
             int destination = elevatorQueue.peek();
             if (destination == m.getCurrent()) {
-                System.out.println("Scheduler: Dequeuesing floor " + destination);
+                System.out.printf("Scheduler: Elevator %d dequeuesing floor %d\n", m.getElevator(), destination);
                 elevatorQueue.remove();
             }
         }
         // enqueues requested floors
         addAndSort(m.getElevator(), m.getDestination());
-        System.out.println("Scheduler: New queues: " + elevatorQueue.toString());
+        System.out.println("Scheduler: Elevator " + m.getElevator() + " queue: " + elevatorQueue.toString());
 
         // send the elevator on its way
         sendToElevator(directElevatorTo(m.getCurrent(), elevatorQueue.peek()), m.getElevator());
@@ -195,8 +195,7 @@ public class Scheduler {
     }
 
     private void sendToElevator(MessageType action, int targetElevator) {
-        System.out.println("Scheduler: Sending message of type " + action);
-        // TODO set the correct target elevator in the message
+        System.out.println("Scheduler: Sending message of type " + action + "to Elevator " + targetElevator);
         byte[] data = Message.serialize((new ElevatorMessage(action)));
         DatagramPacket pack = new DatagramPacket(data, data.length,
                 SimulationVars.elevatorAddresses[targetElevator], SimulationVars.elevatorPorts[targetElevator]);
