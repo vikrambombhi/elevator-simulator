@@ -76,6 +76,8 @@ public class Scheduler {
         }
         if (emptyQueueIndex != null) {
             addAndSort(emptyQueueIndex, m.getOriginFloor());
+            int currentFloor = elevators[emptyQueueIndex].getFloor();
+            sendToElevator(directElevatorTo(currentFloor, m.getOriginFloor()), emptyQueueIndex);
             return;
         }
 
