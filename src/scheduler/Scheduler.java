@@ -214,8 +214,12 @@ public class Scheduler {
             case GODOWN:
                 elevators[targetElevator].setState(Elevator.State.MOVING_DOWN);
                 break;
-                // TODO is it okay to leave to ignore stop state? can we just assumed after it's stopped,
-                // the elevator will continue in the current direction?
+            case STOP:
+                //this is a pick up or drop off.. notify floor
+            	FloorArrivalMessage m = new FloorArrivalMessage();
+            	m.setElevator(targetElevator);
+            	m.setFloor(elevators[targetElevator].getFloor());
+                sendToFloor(m);
         }
     }
     

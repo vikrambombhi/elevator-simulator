@@ -144,7 +144,7 @@ public class FloorSubsystem implements Runnable {
 
 		//check to see if anyone is getting off here
 		if (ourPassengers[m.getElevator()] != 0) {
-			System.out.printf("Floor %d: %d passenger(s) stepped out of elevator %d and arrived at their destination\n", floorNum, m.getElevator(), ourPassengers[m.getElevator()]);
+			System.out.printf("Floor %d: %d passenger(s) stepped out of elevator %d and arrived at their destination\n", floorNum, ourPassengers[m.getElevator()], m.getElevator());
 			ourPassengers[m.getElevator()] = 0;
 		}
 
