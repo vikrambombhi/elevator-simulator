@@ -55,8 +55,5 @@ public class ArrivalSensor implements Runnable{
 		//tell the scheduler the elevator made it
 		sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
 		Message.send(sendSocket, sendPacket);
-		//tell the floorSystem the elevator made it
-		sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[endFloor], SimulationVars.floorPorts[endFloor]);
-		Message.send(sendSocket, sendPacket);
 	}
 }

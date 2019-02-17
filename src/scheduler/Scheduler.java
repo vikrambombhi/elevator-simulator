@@ -76,6 +76,8 @@ public class Scheduler {
         }
         if (emptyQueueIndex != null) {
             addAndSort(emptyQueueIndex, m.getOriginFloor());
+            int currentFloor = elevators[emptyQueueIndex].getFloor();
+            sendToElevator(directElevatorTo(currentFloor, m.getOriginFloor()), emptyQueueIndex);
             return;
         }
 
@@ -138,6 +140,9 @@ public class Scheduler {
         if (destination == m.getFloor()) {
             System.out.printf("Scheduler: Elevator %d dequeuesing floor %d\n", m.getElevator(), destination);
             elevatorQueue.remove();
+            
+            //this is a pick up or drop off.. notify floor
+            sendToFloor(m);
         }
         if (elevatorQueue.isEmpty()) {
             return;
@@ -212,6 +217,21 @@ public class Scheduler {
                 // TODO is it okay to leave to ignore stop state? can we just assumed after it's stopped,
                 // the elevator will continue in the current direction?
         }
+    }
+    
+    public void sendToFloor(FloorArrivalMessage m) {
+    	//peek at where this elevator is going next
+    	LinkedList<Integer> elevatorQueue = queues[m.getElevator()];
+    	if (elevatorQueue.isEmpty()) {
+    		m.setDirection(null);
+    	} else if (elevatorQueue.peek() > m.getFloor()) {
+    		m.setDirection(ElevatorRequestMessage.Direction.UP);
+    	} else {
+    		m.setDirection(ElevatorRequestMessage.Direction.DOWN);
+    	}
+    	byte[] data = Message.serialize(m);
+    	DatagramPacket pack = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[m.getFloor()], SimulationVars.floorPorts[m.getFloor()]);
+    	Message.send(sendSock, pack);
     }
 
     public void close() {
