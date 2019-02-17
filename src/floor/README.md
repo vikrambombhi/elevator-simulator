@@ -26,3 +26,6 @@ DestinationSender:
 SimulationVars:
 	static variables used throughout the floor subsystem. I've stored variables in here that I believe would be useful for other 
 	subsystems to know as well.
+	
+File:
+	handles all input file reading and parses lines in the file to requests and meta messages for the RequestSimulator to utilize. 
