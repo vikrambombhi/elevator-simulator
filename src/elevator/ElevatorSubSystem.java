@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import messages.*;
 import scheduler.Scheduler;
@@ -23,7 +24,9 @@ public class ElevatorSubSystem implements Runnable {
 		elevator = new Elevator(id);
 		try {
 			sendSocket = new DatagramSocket();
-			receiveSocket = new DatagramSocket(SimulationVars.elevatorPorts[id]);
+			receiveSocket = new DatagramSocket(null);
+			receiveSocket.setReuseAddress(true);
+			receiveSocket.bind(new InetSocketAddress(SimulationVars.elevatorPorts[id]));
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
@@ -38,7 +41,7 @@ public class ElevatorSubSystem implements Runnable {
 		int id = elevator.getId();
 		System.out.printf("ElevatorSubSystem %d: Starting on port %d\n", id, SimulationVars.elevatorPorts[id]);
 		try {
-			while (true) {
+			while (!Thread.currentThread().isInterrupted()) {
 				DatagramPacket receivePacket = Message.receive(receiveSocket);
 				Message m = Message.deserialize(receivePacket.getData());
 				handleMessage(m);
@@ -46,6 +49,7 @@ public class ElevatorSubSystem implements Runnable {
 		} catch (Exception e) {
 			System.out.println("ElevatorSubSystem quiting.");
 			e.printStackTrace();
+		} finally {
 			close();
 		}
 	}
@@ -68,7 +72,7 @@ public class ElevatorSubSystem implements Runnable {
 	/*
 	 * handleMessage runs the corresponding action for the message type.
 	 */
-	private void handleMessage(Message m) {
+	public void handleMessage(Message m) {
 		// State machine switch
 		if (m instanceof ElevatorMessage) {
 			// scheduler tells the elevator to move, stop, open or close.
@@ -102,14 +106,14 @@ public class ElevatorSubSystem implements Runnable {
 		byte[] data = Message.serialize(m);
 		// Message the next floor
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
-                SimulationVars.floorAddresses[nextFloor], SimulationVars.floorPorts[nextFloor]);
+				SimulationVars.floorAddresses[nextFloor], SimulationVars.floorPorts[nextFloor]);
 		Message.send(sendSocket, sendPacket);
 	}
 
 	private void forwardFloorRequest(FloorRequestMessage m) {
 		byte[] data = Message.serialize(m);
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
-                SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
+				SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
 		Message.send(sendSocket, sendPacket);
 	}
 }
