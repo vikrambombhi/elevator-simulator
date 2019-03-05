@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import elevator.Elevator;
+import elevator.ElevatorQueue;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
@@ -24,7 +25,7 @@ public class Scheduler {
     public static short PORT = 3000;
 
     private DatagramSocket recvSock, sendSock;
-    private LinkedList<Integer>[] queues;
+    private ElevatorQueue[] queues;
     private Elevator[] elevators;
 
     public Scheduler() {
@@ -46,9 +47,9 @@ public class Scheduler {
             se.printStackTrace();
             System.exit(1);
         }
-        queues = new LinkedList[SimulationVars.numberOfElevators];
+        queues = new ElevatorQueue[SimulationVars.numberOfElevators];
         for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
-            queues[i] = new LinkedList<Integer>();
+            queues[i] = new ElevatorQueue();
         }
     }
 
@@ -75,7 +76,7 @@ public class Scheduler {
             }
         }
         if (emptyQueueIndex != null) {
-            addAndSort(emptyQueueIndex, m.getOriginFloor());
+            addPickUpAndSort(emptyQueueIndex, m.getOriginFloor());
             int currentFloor = elevators[emptyQueueIndex].getFloor();
             sendToElevator(directElevatorTo(currentFloor, m.getOriginFloor()), emptyQueueIndex);
             return;
@@ -109,12 +110,12 @@ public class Scheduler {
             }
         }
         if (targetElevator != null) {
-            queues[targetElevator.getId()].add(m.getOriginFloor());
+            queues[targetElevator.getId()].addPickUp(m.getOriginFloor());
             return;
         }
 
         // find smallest queue size
-        LinkedList<Integer> smallestQueue = queues[0];
+        ElevatorQueue smallestQueue = queues[0];
         Integer smallestQueueIndex = null;
         for (int i = 1; i < queues.length; i ++) {
             if (queues[i].size() < smallestQueue.size()) {
@@ -122,13 +123,13 @@ public class Scheduler {
                 smallestQueueIndex = i;
             }
         }
-        addAndSort(smallestQueueIndex, m.getOriginFloor());
+        addPickUpAndSort(smallestQueueIndex, m.getOriginFloor());
     }
 
     private void handleFloorArrival(FloorArrivalMessage m) {
         // update elevator model
         elevators[m.getElevator()].setFloor(m.getFloor());
-        LinkedList<Integer> elevatorQueue = queues[m.getElevator()];
+        ElevatorQueue elevatorQueue = queues[m.getElevator()];
 
         if (elevatorQueue.isEmpty()) {
             return;
@@ -154,7 +155,7 @@ public class Scheduler {
     private void handleFloorRequest(FloorRequestMessage m) {
         // this means that an elevator is leaving a floor
         // we know what floor buttons were pressed
-        LinkedList<Integer> elevatorQueue = queues[m.getElevator()];
+        ElevatorQueue elevatorQueue = queues[m.getElevator()];
         if (!elevatorQueue.isEmpty()) {
             int destination = elevatorQueue.peek();
             if (destination == m.getCurrent()) {
@@ -163,8 +164,8 @@ public class Scheduler {
             }
         }
         // enqueues requested floors
-        addAndSort(m.getElevator(), m.getDestination());
-        System.out.println("Scheduler: Elevator " + m.getElevator() + " queue: " + elevatorQueue.toString());
+        addDropOffAndSort(m.getElevator(), m.getDestination());
+        System.out.println("Scheduler: Elevator " + m.getElevator() + elevatorQueue.toString());
 
         // send the elevator on its way
         sendToElevator(directElevatorTo(m.getCurrent(), elevatorQueue.peek()), m.getElevator());
@@ -172,22 +173,30 @@ public class Scheduler {
 
 	// addAndSort addes the requested floor to the elevator's queue and sorts to stop
 	// on floors on the way.
-	private void addAndSort(int elevatorId, int floor) {
-		queues[elevatorId].add(floor);
+	private void addPickUpAndSort(int elevatorId, int floor) {
+		queues[elevatorId].addPickUp(floor);
 		switch (elevators[elevatorId].getState()) {
 			case MOVING_UP:
-				Collections.sort(queues[elevatorId]);
+				queues[elevatorId].sortUp();
 				break;
 			case MOVING_DOWN:
-				Collections.sort(queues[elevatorId], new Comparator<Integer>() {
-					@Override
-					public int compare(Integer int1, Integer int2) {
-						return int2 - int1;
-					}
-				});
+				queues[elevatorId].sortDown();
 				break;
 		}
-        System.out.println("Scheduler: Elevator " + elevatorId +  " queue: " + queues[elevatorId].toString());
+        System.out.println("Scheduler: Elevator " + elevatorId + queues[elevatorId].toString());
+	}
+	
+	private void addDropOffAndSort(int elevatorId, int floor) {
+		queues[elevatorId].addDropOff(floor);
+		switch (elevators[elevatorId].getState()) {
+			case MOVING_UP:
+				queues[elevatorId].sortUp();;
+				break;
+			case MOVING_DOWN:
+				queues[elevatorId].sortDown();
+				break;
+		}
+        System.out.println("Scheduler: Elevator " + elevatorId + queues[elevatorId].toString());
 	}
 
     private MessageType directElevatorTo(int currentFloor, int toFloor) {
@@ -225,7 +234,7 @@ public class Scheduler {
     
     public void sendToFloor(FloorArrivalMessage m) {
     	//peek at where this elevator is going next
-    	LinkedList<Integer> elevatorQueue = queues[m.getElevator()];
+    	ElevatorQueue elevatorQueue = queues[m.getElevator()];
     	if (elevatorQueue.isEmpty()) {
     		m.setDirection(null);
     	} else if (elevatorQueue.peek() > m.getFloor()) {

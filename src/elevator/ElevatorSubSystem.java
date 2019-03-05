@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import messages.*;
 import scheduler.Scheduler;
+import floor.ArrivalSensor;
 import floor.SimulationVars;
 import messages.ElevatorRequestMessage.Direction;
 
@@ -17,6 +18,10 @@ import messages.ElevatorRequestMessage.Direction;
  */
 public class ElevatorSubSystem implements Runnable {
 	private Elevator elevator;
+
+	//each elevator has an arrival sensor
+	private Thread arrivalSensor;
+	
 	// Communication sockets
 	private DatagramSocket sendSocket, receiveSocket;
 
@@ -90,24 +95,12 @@ public class ElevatorSubSystem implements Runnable {
 	}
 
 	private void sendTravelMessage() {
-		FloorTravelMessage m = new FloorTravelMessage();
-		m.setElevator(elevator.getId());
-		m.setStartingFloor(elevator.getFloor());
-
-		int diff = 1;
 		if (elevator.getState() == Elevator.State.MOVING_UP) {
-			m.setDirection(Direction.UP);
+			arrivalSensor = new Thread(new ArrivalSensor(elevator.getId(), elevator.getFloor(), elevator.getFloor()+1));
 		} else {
-			m.setDirection(Direction.DOWN);
-			diff *= -1;
+			arrivalSensor = new Thread(new ArrivalSensor(elevator.getId(), elevator.getFloor(), elevator.getFloor()-1));
 		}
-
-		int nextFloor = elevator.getFloor()+diff;
-		byte[] data = Message.serialize(m);
-		// Message the next floor
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
-				SimulationVars.floorAddresses[nextFloor], SimulationVars.floorPorts[nextFloor]);
-		Message.send(sendSocket, sendPacket);
+		arrivalSensor.start();
 	}
 
 	private void forwardFloorRequest(FloorRequestMessage m) {
