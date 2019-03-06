@@ -99,38 +99,6 @@ public class FloorUnitTests extends TestCase {
 		floorSubsys.tearDown();
 	}
 
-	public void testTravelMessage() {
-
-		FloorSubsystem floorSubsys = new FloorSubsystem(1);
-
-		//create a FloorTravelMessage going UP - as an elevator would
-		FloorTravelMessage mUP = new FloorTravelMessage();
-		mUP.setDirection(Direction.UP);
-		mUP.setElevator(0);
-		mUP.setStartingFloor(0);
-
-		//create a FloorTravelMessage going DOWN - as an elevator would
-		FloorTravelMessage mDOWN = new FloorTravelMessage();
-		mDOWN.setDirection(Direction.DOWN);
-		mDOWN.setElevator(0);
-		mDOWN.setStartingFloor(2);
-
-		//check that the direction lamp starts idle
-		assertEquals(floorSubsys.getFloor().getDirectionLamp(0), directionLampState.IDLE);
-
-		floorSubsys.travelMessage(mUP);
-
-		//check that the state updates to UP
-		assertEquals(floorSubsys.getFloor().getDirectionLamp(0), directionLampState.UP);
-
-		floorSubsys.travelMessage(mDOWN);
-
-		//check that the state updates to DOWN
-		assertEquals(floorSubsys.getFloor().getDirectionLamp(0), directionLampState.DOWN);
-
-		floorSubsys.tearDown();
-	}
-
 	public void testArrivalMessage() {
 		//This scenario is more complex and involves the previous messages having already been sent...
 
