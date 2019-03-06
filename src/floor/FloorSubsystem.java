@@ -83,15 +83,9 @@ public class FloorSubsystem implements Runnable {
 				} else {
 					metaMessage((FloorMetaMessage) m);
 				}
-			}
-
-			//if approaching floor message
-			else if(m instanceof FloorTravelMessage) {
-				travelMessage((FloorTravelMessage) m);
-			}
 
 			//if arrived message
-			else if (m instanceof FloorArrivalMessage) {
+			} else if (m instanceof FloorArrivalMessage) {
 				arrivalMessage((FloorArrivalMessage) m);
 			}
 		}
@@ -111,23 +105,6 @@ public class FloorSubsystem implements Runnable {
 	//another floor letting us know passengers are on their way to our floor
 	public void metaMessage(FloorMetaMessage m) {
 		ourPassengers[m.getElevator()]++;
-	}
-
-	public void travelMessage(FloorTravelMessage m) {
-		int elevatorToUpdate = m.getElevator();
-		int startingFloor = m.getStartingFloor();
-		if (m.getDirection() == Direction.UP) {
-			System.out.printf("Floor %d: Elevator %d travelling UP from floor %d to floor %d\n", floorNum, elevatorToUpdate, startingFloor, floorNum);
-
-			//update direction lamp
-			floor.setDirectionLamp(elevatorToUpdate, directionLampState.UP);
-
-		} else {
-			System.out.printf("Floor %d: Elevator %d travelling DOWN from floor %d to floor %d\n", floorNum, elevatorToUpdate, startingFloor, floorNum);
-
-			//update direction lamp
-			floor.setDirectionLamp(elevatorToUpdate, directionLampState.DOWN);
-		}
 	}
 
 	public void arrivalMessage(FloorArrivalMessage m) {
