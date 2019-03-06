@@ -93,6 +93,35 @@ public class File {
 		return m;
 	}
 	
+	public FaultMessage getFaultMessage(int time) {
+		FaultMessage m = null;
+		try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(" ");
+				String timeStamp = parts[0];
+				String faultIndicator = parts[1];
+				String faultType = parts[2];
+				String elevator = parts[3];
+				int msTime = getMS(timeStamp);
+				
+				if (Integer.parseInt(faultIndicator) == -1 && msTime == time) {
+					m = new FaultMessage();
+					m.setElevator(Integer.parseInt(elevator));
+					if (faultType.equals("Hard")) {
+						m.setHardFault(true);
+					} else {
+						m.setSoftFault(true);
+					}
+					return m;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return m;
+	}
+	
 	//returns the stringified time stamp t in milliseconds
 	public int getMS(String t) {
 		String[] parts = t.split(":");
