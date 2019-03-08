@@ -10,29 +10,33 @@ public class ElevatorQueue {
 
 	private LinkedList<Integer> pickUpQueue;
 	private LinkedList<Integer> dropOffQueue;
-	private Direction direction; 
-	
+	private Direction direction;
+
 	public ElevatorQueue() {
 		pickUpQueue = new LinkedList<Integer>();
 		dropOffQueue = new LinkedList<Integer>();
 	}
-	
+
 	public boolean isEmpty() {
 		return (pickUpQueue.isEmpty() && dropOffQueue.isEmpty());
 	}
-	
+
+	public boolean pickupIsEmpty() {
+		return pickUpQueue.isEmpty();
+	}
+
 	public void addPickUp(Integer i) {
 		pickUpQueue.add(i);
 	}
-	
+
 	public void addDropOff(Integer i) {
 		dropOffQueue.add(i);
 	}
-	
+
 	public int size() {
 		return pickUpQueue.size() + dropOffQueue.size();
 	}
-	
+
 	public int peek() {
 		if (isEmpty()) {
 			return -1;
@@ -41,29 +45,29 @@ public class ElevatorQueue {
 			return dropOffQueue.peek();
 		} else if (dropOffQueue.isEmpty()) {
 			return pickUpQueue.peek();
-		} 
-		
+		}
+
 		if (direction == Direction.UP) {
 			return Math.min(pickUpQueue.peek(), dropOffQueue.peek());
 		} else {
 			return Math.max(pickUpQueue.peek(), dropOffQueue.peek());
 		}
 	}
-	
+
 	public int pickUpPeek() {
 		if (pickUpQueue.isEmpty()) {
 			return -1;
 		}
 		return pickUpQueue.peek();
 	}
-	
+
 	public int dropOffPeek() {
 		if (dropOffQueue.isEmpty()) {
 			return -1;
 		}
 		return dropOffQueue.peek();
 	}
-	
+
 	public Integer remove() {
 		int peek = peek();
 		if (peek != -1) {
@@ -76,17 +80,21 @@ public class ElevatorQueue {
 		}
 		return peek;
 	}
-	
+
+	public Integer pickupPop() {
+		return pickUpQueue.pop();
+	}
+
 	public String toString() {
 		return " pick-ups: "+pickUpQueue.toString()+ " drop-offs: "+dropOffQueue.toString();
 	}
-	
+
 	public void sortUp() {
 		Collections.sort(pickUpQueue);
 		Collections.sort(dropOffQueue);
 		direction = Direction.UP;
 	}
-	
+
 	public void sortDown() {
 		Collections.sort(pickUpQueue, new Comparator<Integer>() {
 			@Override
@@ -101,5 +109,9 @@ public class ElevatorQueue {
 			}
 		});
 		direction = Direction.DOWN;
+	}
+
+	public Direction getDirection() {
+		return direction;
 	}
 }

@@ -15,6 +15,7 @@ import elevator.ElevatorQueue;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
+import messages.ElevatorRequestMessage.Direction;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
@@ -23,10 +24,13 @@ import floor.SimulationVars;
 public class Scheduler {
     public static String HOST = "127.0.0.1";
     public static short PORT = 3000;
+	private static long MIN_RESPONSE_INTERVAL = 3 * 1000; // 3 seconds
 
     private DatagramSocket recvSock, sendSock;
     private ElevatorQueue[] queues;
     private Elevator[] elevators;
+	private long[] lastResponses;
+	private Thread elevatorWatcher;
 
     public Scheduler() {
         try {
@@ -50,6 +54,12 @@ public class Scheduler {
         queues = new ElevatorQueue[SimulationVars.numberOfElevators];
         for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
             queues[i] = new ElevatorQueue();
+        }
+
+		newElevatorWatcher();
+		lastResponses = new long[SimulationVars.numberOfElevators];
+        for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
+            lastResponses[i] = System.currentTimeMillis();
         }
     }
 
@@ -128,6 +138,7 @@ public class Scheduler {
 
     private void handleFloorArrival(FloorArrivalMessage m) {
         // update elevator model
+		lastResponses[m.getElevator()] = System.currentTimeMillis();
         elevators[m.getElevator()].setFloor(m.getFloor());
         ElevatorQueue elevatorQueue = queues[m.getElevator()];
 
@@ -141,7 +152,7 @@ public class Scheduler {
         if (destination == m.getFloor()) {
             System.out.printf("Scheduler: Elevator %d dequeuesing floor %d\n", m.getElevator(), destination);
             elevatorQueue.remove();
-            
+
             //this is a pick up or drop off.. notify floor
             sendToFloor(m);
         }
@@ -185,7 +196,7 @@ public class Scheduler {
 		}
         System.out.println("Scheduler: Elevator " + elevatorId + queues[elevatorId].toString());
 	}
-	
+
 	private void addDropOffAndSort(int elevatorId, int floor) {
 		queues[elevatorId].addDropOff(floor);
 		switch (elevators[elevatorId].getState()) {
@@ -231,7 +242,7 @@ public class Scheduler {
                 sendToFloor(m);
         }
     }
-    
+
     public void sendToFloor(FloorArrivalMessage m) {
     	//peek at where this elevator is going next
     	ElevatorQueue elevatorQueue = queues[m.getElevator()];
@@ -248,14 +259,15 @@ public class Scheduler {
     }
 
     public void close() {
+		elevatorWatcher.interrupt();
         recvSock.close();
         sendSock.close();
     }
 
     public void run() {
+		elevatorWatcher.start();
         try {
             while (true) {
-                // sendToElevator(MessageType.GOUP);
                 schedule();
             }
         } catch (Exception e) {
@@ -264,9 +276,60 @@ public class Scheduler {
         }
     }
 
-    public static void main(String args[]) {
-        System.out.println("Scheduler: Starting on port 3000");
-        Scheduler sched = new Scheduler();
-        sched.run();
-    }
+	// The watcher removes faulty elevators and redistributes their requests.
+	// An elevator is considered faulty if it has not moved inbetween floors
+	// within the MIN_RESPONSE_INTERVAL.
+	private void newElevatorWatcher() {
+		elevatorWatcher = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (!Thread.currentThread().isInterrupted()) {
+					removeFaultyElevators();
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt(); // persist the interrupt flag
+					}
+				}
+			}
+		});
+	}
+
+	private synchronized void removeFaultyElevators() {
+		long now = System.currentTimeMillis();
+		for (int i=0; i<lastResponses.length; i++) {
+			long last = lastResponses[i];
+			if (last == -1) {
+				continue;
+			}
+			if (now - last < MIN_RESPONSE_INTERVAL) {
+				continue;
+			}
+			removeElevator(i);
+		}
+	}
+
+	private void removeElevator(int id) {
+		ElevatorQueue queue = queues[id];
+		queues[id] = null;
+		elevators[id] = null;
+		lastResponses[id] = -1;
+
+		redistributePickupRequests(queue);
+	}
+
+	private void redistributePickupRequests(ElevatorQueue queue) {
+		// ignore drop off queues, thoses people are stuck in the unresponsive elevator
+		Direction dir = queue.getDirection();
+		while (!queue.pickupIsEmpty()) {
+			ElevatorRequestMessage msg = new ElevatorRequestMessage(dir, queue.pickupPop());
+			handleElevatorRequest(msg);
+		}
+	}
+
+	public static void main(String args[]) {
+		System.out.println("Scheduler: Starting on port 3000");
+		Scheduler sched = new Scheduler();
+		sched.run();
+	}
 }
