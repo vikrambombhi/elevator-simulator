@@ -92,6 +92,9 @@ public class Scheduler {
         // add request to pick up elevators
         Integer emptyQueueIndex = null;
         for (int i = 0; i < queues.length; i ++) {
+            if (queues[i] == null) {
+				continue;
+			}
             if (queues[i].isEmpty()) {
                 emptyQueueIndex = i;
             }
@@ -107,6 +110,9 @@ public class Scheduler {
         Elevator targetElevator = null;
         int smallestDiff = SimulationVars.numberOfFloors;
         for (Elevator e: elevators) {
+            if (e == null) {
+				continue;
+			}
             switch (m.getDirection()) {
                 case UP:
                     if (e.getState() == Elevator.State.MOVING_UP) {
@@ -139,6 +145,9 @@ public class Scheduler {
         ElevatorQueue smallestQueue = queues[0];
         Integer smallestQueueIndex = null;
         for (int i = 1; i < queues.length; i ++) {
+            if (queues[i] == null) {
+				continue;
+			}
             if (queues[i].size() < smallestQueue.size()) {
                 smallestQueue = queues[i];
                 smallestQueueIndex = i;
