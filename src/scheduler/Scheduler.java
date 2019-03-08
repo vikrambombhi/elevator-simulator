@@ -24,7 +24,8 @@ import floor.SimulationVars;
 public class Scheduler {
     public static String HOST = "127.0.0.1";
     public static short PORT = 3000;
-	private static long MIN_RESPONSE_INTERVAL = 3 * 1000; // 3 seconds
+	private static long SOFT_FAULT_INTERVAL = 2 * 1000; // 2 seconds
+	private static long HARD_FAULT_INTERVAL = 5 * 1000; // 5 seconds
 
     private DatagramSocket recvSock, sendSock;
     private ElevatorQueue[] queues;
@@ -71,13 +72,23 @@ public class Scheduler {
         if (m instanceof ElevatorRequestMessage) {
             handleElevatorRequest((ElevatorRequestMessage) m);
         } else if (m instanceof FloorArrivalMessage) {
-            handleFloorArrival((FloorArrivalMessage) m);
+			FloorArrivalMessage msg = (FloorArrivalMessage) m;
+			if (elevators[msg.getElevator()] == null) {
+				// drop message
+				return;
+			}
+            handleFloorArrival(msg);
         } else if (m instanceof FloorRequestMessage) {
+			FloorRequestMessage msg = (FloorRequestMessage) m;
+			if (elevators[msg.getElevator()] == null) {
+				// drop message
+				return;
+			}
             handleFloorRequest((FloorRequestMessage) m);
         }
     }
 
-    private void handleElevatorRequest(ElevatorRequestMessage m) {
+    private synchronized void handleElevatorRequest(ElevatorRequestMessage m) {
         // add request to pick up elevators
         Integer emptyQueueIndex = null;
         for (int i = 0; i < queues.length; i ++) {
@@ -136,7 +147,7 @@ public class Scheduler {
         addPickUpAndSort(smallestQueueIndex, m.getOriginFloor());
     }
 
-    private void handleFloorArrival(FloorArrivalMessage m) {
+    private synchronized void handleFloorArrival(FloorArrivalMessage m) {
         // update elevator model
 		lastResponses[m.getElevator()] = System.currentTimeMillis();
         elevators[m.getElevator()].setFloor(m.getFloor());
@@ -163,7 +174,7 @@ public class Scheduler {
         return;
     }
 
-    private void handleFloorRequest(FloorRequestMessage m) {
+    private synchronized void handleFloorRequest(FloorRequestMessage m) {
         // this means that an elevator is leaving a floor
         // we know what floor buttons were pressed
         ElevatorQueue elevatorQueue = queues[m.getElevator()];
@@ -278,7 +289,7 @@ public class Scheduler {
 
 	// The watcher removes faulty elevators and redistributes their requests.
 	// An elevator is considered faulty if it has not moved inbetween floors
-	// within the MIN_RESPONSE_INTERVAL.
+	// within the HARD_FAULT_INTERVAL.
 	private void newElevatorWatcher() {
 		elevatorWatcher = new Thread(new Runnable() {
 			@Override
@@ -302,10 +313,13 @@ public class Scheduler {
 			if (last == -1) {
 				continue;
 			}
-			if (now - last < MIN_RESPONSE_INTERVAL) {
+			if (now - last > HARD_FAULT_INTERVAL) {
+				removeElevator(i);
+			} else if (now - last > SOFT_FAULT_INTERVAL) {
+				// TODO should resend message
+				// TODO make mechinish to revisit past message so they can be resent
 				continue;
 			}
-			removeElevator(i);
 		}
 	}
 
