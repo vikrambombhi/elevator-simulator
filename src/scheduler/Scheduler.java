@@ -24,6 +24,7 @@ import floor.SimulationVars;
 public class Scheduler {
     public static String HOST = "127.0.0.1";
     public static short PORT = 3000;
+	// 2 seconds which is 4 times the SimulationVars.elevatorTravelTime
 	private static long SOFT_FAULT_INTERVAL = 2 * 1000; // 2 seconds
 	private static long HARD_FAULT_INTERVAL = 5 * 1000; // 5 seconds
 
@@ -157,8 +158,10 @@ public class Scheduler {
     }
 
     private synchronized void handleFloorArrival(FloorArrivalMessage m) {
-        // update elevator model
+		// TODO: properly time the elevators as last response time as the time
+		// you sent it a message and the time it last replied.
 		lastResponses[m.getElevator()] = System.currentTimeMillis();
+        // update elevator model
         elevators[m.getElevator()].setFloor(m.getFloor());
         ElevatorQueue elevatorQueue = queues[m.getElevator()];
 
@@ -297,14 +300,14 @@ public class Scheduler {
     }
 
 	// The watcher removes faulty elevators and redistributes their requests.
-	// An elevator is considered faulty if it has not moved inbetween floors
+	// An elevator is considered faulty if it has not moved in-between floors
 	// within the HARD_FAULT_INTERVAL.
 	private void newElevatorWatcher() {
 		elevatorWatcher = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				while (!Thread.currentThread().isInterrupted()) {
-					removeFaultyElevators();
+					handleUnresponsiveElevators();
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -315,19 +318,22 @@ public class Scheduler {
 		});
 	}
 
-	private synchronized void removeFaultyElevators() {
+	private synchronized void handleUnresponsiveElevators() {
 		long now = System.currentTimeMillis();
 		for (int i=0; i<lastResponses.length; i++) {
 			long last = lastResponses[i];
 			if (last == -1) {
+				// Elevator is unregistered, ignore it.
 				continue;
 			}
 			if (now - last > HARD_FAULT_INTERVAL) {
+				// Elevator was resent last message and still hasn't responded.
+				// This can now be considered a faulty elevator.
 				removeElevator(i);
 			} else if (now - last > SOFT_FAULT_INTERVAL) {
+				// Elevator was told to move and either is stuck or hasn't received the message.
 				// TODO should resend message
-				// TODO make mechinish to revisit past message so they can be resent
-				continue;
+				// TODO make mechanism to revisit past message so they can be resent
 			}
 		}
 	}
@@ -342,7 +348,7 @@ public class Scheduler {
 	}
 
 	private void redistributePickupRequests(ElevatorQueue queue) {
-		// ignore drop off queues, thoses people are stuck in the unresponsive elevator
+		// ignore drop off queues, those people are stuck in the unresponsive elevator
 		Direction dir = queue.getDirection();
 		while (!queue.pickupIsEmpty()) {
 			ElevatorRequestMessage msg = new ElevatorRequestMessage(dir, queue.pickupPop());
