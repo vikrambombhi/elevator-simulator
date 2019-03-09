@@ -225,28 +225,39 @@ public class Scheduler {
 	// on floors on the way.
 	private void addPickUpAndSort(int elevatorId, int floor) {
 		queues[elevatorId].addPickUp(floor);
+		queueSort(elevatorId);
+	}
+
+	private void addDropOffAndSort(int elevatorId, int floor) {
+		queues[elevatorId].addDropOff(floor);
+		queueSort(elevatorId);
+	}
+
+	private void queueSort(int elevatorId) {
 		switch (elevators[elevatorId].getState()) {
 		case MOVING_UP:
 			queues[elevatorId].sortUp();
 			break;
 		case MOVING_DOWN:
 			queues[elevatorId].sortDown();
+			break;
+		case STOPPED_DOORS_CLOSED:
+			defaultQueueSort(elevatorId);
 			break;
 		}
 		System.out.println("Scheduler: Elevator " + elevatorId + queues[elevatorId].toString());
 	}
 
-	private void addDropOffAndSort(int elevatorId, int floor) {
-		queues[elevatorId].addDropOff(floor);
-		switch (elevators[elevatorId].getState()) {
-		case MOVING_UP:
-			queues[elevatorId].sortUp();
-			break;
-		case MOVING_DOWN:
-			queues[elevatorId].sortDown();
-			break;
+	private void defaultQueueSort(int elevatorId) {
+		// Continue sorting in the direction the queue is in.
+		switch (queues[elevatorId].getDirection()) {
+			case UP:
+				queues[elevatorId].sortUp();
+				break;
+			case DOWN:
+				queues[elevatorId].sortDown();
+				break;
 		}
-		System.out.println("Scheduler: Elevator " + elevatorId + queues[elevatorId].toString());
 	}
 
 	private MessageType directElevatorTo(int currentFloor, int toFloor) {
