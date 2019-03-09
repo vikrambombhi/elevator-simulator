@@ -170,6 +170,14 @@ public class Scheduler {
 		// update elevator model
 		elevators[m.getElevator()].setFloor(m.getFloor());
 		ElevatorQueue elevatorQueue = queues[m.getElevator()];
+        switch(elevatorQueue.getDirection()) {
+            case UP:
+                elevators[m.getElevator()].setState(Elevator.State.MOVING_UP);
+                break;
+            case DOWN:
+                elevators[m.getElevator()].setState(Elevator.State.MOVING_DOWN);
+                break;
+        }
 
 		if (elevatorQueue.isEmpty()) {
 			return;
@@ -193,8 +201,10 @@ public class Scheduler {
 	}
 
 	private synchronized void handleFloorRequest(FloorRequestMessage m) {
-		// this means that an elevator is leaving a floor
-		// we know what floor buttons were pressed
+		// This means that an elevator is leaving a floor and we know what floor buttons
+        // were pressed. The elevator must be at a stopped state.
+        elevators[m.getElevator()].setState(Elevator.State.STOPPED_DOORS_CLOSED);
+
 		ElevatorQueue elevatorQueue = queues[m.getElevator()];
 		if (!elevatorQueue.isEmpty()) {
 			int destination = elevatorQueue.peek();
@@ -231,7 +241,6 @@ public class Scheduler {
 		switch (elevators[elevatorId].getState()) {
 		case MOVING_UP:
 			queues[elevatorId].sortUp();
-			;
 			break;
 		case MOVING_DOWN:
 			queues[elevatorId].sortDown();
@@ -258,14 +267,7 @@ public class Scheduler {
 		Message.send(sendSock, pack);
 
 		switch (action) {
-		case GOUP:
-			elevators[targetElevator].setState(Elevator.State.MOVING_UP);
-			break;
-		case GODOWN:
-			elevators[targetElevator].setState(Elevator.State.MOVING_DOWN);
-			break;
 		case STOP:
-			elevators[targetElevator].setState(Elevator.State.STOPPED_DOORS_CLOSED);
 			// this is a pick up or drop off.. notify floor
 			FloorArrivalMessage m = new FloorArrivalMessage();
 			m.setElevator(targetElevator);
