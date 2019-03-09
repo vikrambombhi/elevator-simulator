@@ -337,8 +337,7 @@ public class Scheduler {
 			}
 			if (now - last > FAULT_INTERVAL) {
 				// check state. Is it
-				if (elevators[i].getState() == State.MOVING_DOWN || elevators[i].getState() == State.MOVING_UP) {
-
+				if (elevators[i].isMoving()) {
 					// Elevator was resent last message and still hasn't responded.
 					// This can now be considered a faulty elevator.
 					removeElevator(i);
