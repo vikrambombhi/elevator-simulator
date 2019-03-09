@@ -89,8 +89,12 @@ public class Scheduler {
         }
     }
 
+	// Adds request to pick up to the best elevator. The best elevator for the
+	// request is determined by it's qualification on different priority levels.
+	// If no elevators satisfy priority 1, then the best elevator for priority 2
+	// will be chosen and etc.
     private synchronized void handleElevatorRequest(ElevatorRequestMessage m) {
-        // add request to pick up elevators
+		// Priority 1: Elevator queues with no work.
         Integer emptyQueueIndex = null;
         for (int i = 0; i < queues.length; i ++) {
             if (queues[i] == null) {
@@ -107,6 +111,7 @@ public class Scheduler {
             return;
         }
 
+		// Priority 2: Elevators that will past the destination in the same direction.
         // find elevators going the same direction and can hit
         Elevator targetElevator = null;
         int smallestDiff = SimulationVars.numberOfFloors;
@@ -142,6 +147,7 @@ public class Scheduler {
             return;
         }
 
+		// Priority 3: Elevators with the smallest work queue.
         // find smallest queue size
         ElevatorQueue smallestQueue = queues[0];
         Integer smallestQueueIndex = null;
@@ -173,7 +179,7 @@ public class Scheduler {
         // tell elevator to go up, down, or stop & open
         int destination = elevatorQueue.peek();
         if (destination == m.getFloor()) {
-            System.out.printf("Scheduler: Elevator %d dequeuesing floor %d\n", m.getElevator(), destination);
+            System.out.printf("Scheduler: Elevator %d dequeuing floor %d\n", m.getElevator(), destination);
             elevatorQueue.remove();
 
             //this is a pick up or drop off.. notify floor
@@ -193,7 +199,7 @@ public class Scheduler {
         if (!elevatorQueue.isEmpty()) {
             int destination = elevatorQueue.peek();
             if (destination == m.getCurrent()) {
-                System.out.printf("Scheduler: Elevator %d dequeuesing floor %d\n", m.getElevator(), destination);
+                System.out.printf("Scheduler: Elevator %d dequeuing floor %d\n", m.getElevator(), destination);
                 elevatorQueue.remove();
             }
         }
@@ -205,7 +211,7 @@ public class Scheduler {
         sendToElevator(directElevatorTo(m.getCurrent(), elevatorQueue.peek()), m.getElevator());
     }
 
-	// addAndSort addes the requested floor to the elevator's queue and sorts to stop
+	// addAndSort adds the requested floor to the elevator's queue and sorts to stop
 	// on floors on the way.
 	private void addPickUpAndSort(int elevatorId, int floor) {
 		queues[elevatorId].addPickUp(floor);
@@ -258,6 +264,7 @@ public class Scheduler {
                 elevators[targetElevator].setState(Elevator.State.MOVING_DOWN);
                 break;
             case STOP:
+                elevators[targetElevator].setState(Elevator.State.STOPPED_DOORS_CLOSED);
                 //this is a pick up or drop off.. notify floor
             	FloorArrivalMessage m = new FloorArrivalMessage();
             	m.setElevator(targetElevator);
