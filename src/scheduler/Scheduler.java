@@ -115,13 +115,14 @@ public class Scheduler {
 		// find elevators going the same direction and can hit
 		Elevator targetElevator = null;
 		int smallestDiff = SimulationVars.numberOfFloors;
-		for (Elevator e : elevators) {
+		for (int i = 0; i < elevators.length; i++) {
+			Elevator e = elevators[i];
 			if (e == null) {
 				continue;
 			}
 			switch (m.getDirection()) {
 			case UP:
-				if (e.getState() == Elevator.State.MOVING_UP) {
+				if (queues[i].getDirection() == Direction.UP) {
 					if (e.getFloor() < m.getOriginFloor()) {
 						int diff = m.getOriginFloor() - e.getFloor();
 						if (diff < smallestDiff) {
@@ -131,7 +132,7 @@ public class Scheduler {
 				}
 				break;
 			case DOWN:
-				if (e.getState() == Elevator.State.MOVING_DOWN) {
+				if (queues[i].getDirection() == Direction.DOWN) {
 					if (e.getFloor() > m.getOriginFloor()) {
 						int diff = e.getFloor() - m.getOriginFloor();
 						if (diff < smallestDiff) {
