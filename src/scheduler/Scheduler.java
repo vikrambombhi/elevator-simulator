@@ -71,6 +71,11 @@ public class Scheduler {
 		System.out.println("Scheduler: Waiting for message");
 		Message m = Message.deserialize(Message.receive(recvSock).getData());
 		if (m instanceof ElevatorRequestMessage) {
+			if (!anyAvailableElevators()) {
+				close();
+				System.out.println("Scheduler: No more available elevators, exiting");
+				System.exit(0);
+			}
 			handleElevatorRequest((ElevatorRequestMessage) m);
 		} else if (m instanceof FloorArrivalMessage) {
 			FloorArrivalMessage msg = (FloorArrivalMessage) m;
@@ -363,6 +368,7 @@ public class Scheduler {
 	}
 
 	private void removeElevator(int id) {
+		System.out.println("Scheduler: Removing elevator: " + id + " containing the queue: " + queues[id]);
 		ElevatorQueue queue = queues[id];
 		queues[id] = null;
 		elevators[id] = null;
@@ -378,6 +384,15 @@ public class Scheduler {
 			ElevatorRequestMessage msg = new ElevatorRequestMessage(dir, queue.pickupPop());
 			handleElevatorRequest(msg);
 		}
+	}
+
+	private boolean anyAvailableElevators() {
+		for (Elevator e: elevators) {
+			if (e != null) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static void main(String args[]) {
