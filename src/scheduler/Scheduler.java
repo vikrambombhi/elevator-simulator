@@ -152,12 +152,16 @@ public class Scheduler {
 
 		// Priority 3: Elevators with the smallest work queue.
 		// find smallest queue size
-		ElevatorQueue smallestQueue = queues[0];
+		ElevatorQueue smallestQueue = null;
 		Integer smallestQueueIndex = null;
-		for (int i = 1; i < queues.length; i++) {
+		for (int i = 0; i < queues.length; i++) {
 			if (queues[i] == null) {
 				continue;
 			}
+            if (smallestQueue == null) {
+                smallestQueue = queues[i];
+                continue;
+            }
 			if (queues[i].size() < smallestQueue.size()) {
 				smallestQueue = queues[i];
 				smallestQueueIndex = i;
