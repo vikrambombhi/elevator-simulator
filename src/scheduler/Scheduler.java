@@ -2,17 +2,11 @@ package scheduler;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.LinkedList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 import elevator.Elevator;
 import elevator.ElevatorQueue;
-import elevator.Elevator.State;
+import floor.SimulationVars;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
@@ -20,7 +14,6 @@ import messages.ElevatorRequestMessage.Direction;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
-import floor.SimulationVars;
 
 public class Scheduler {
 	public static String HOST = "127.0.0.1";
@@ -31,6 +24,7 @@ public class Scheduler {
 	private DatagramSocket recvSock, sendSock;
 	private ElevatorQueue[] queues;
 	private Elevator[] elevators;
+	private int[] currentDestinations;
 	private long[] lastResponses;
 	private Thread elevatorWatcher;
 
@@ -53,6 +47,7 @@ public class Scheduler {
 			se.printStackTrace();
 			System.exit(1);
 		}
+		setcurrentDestinations(new int[SimulationVars.numberOfElevators]);
 		queues = new ElevatorQueue[SimulationVars.numberOfElevators];
 		for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
 			queues[i] = new ElevatorQueue();
@@ -112,6 +107,7 @@ public class Scheduler {
 		if (emptyQueueIndex != null) {
 			addPickUpAndSort(emptyQueueIndex, m.getOriginFloor());
 			int currentFloor = elevators[emptyQueueIndex].getFloor();
+			currentDestinations[emptyQueueIndex] = currentFloor;
 			sendToElevator(directElevatorTo(currentFloor, m.getOriginFloor()), emptyQueueIndex);
 			return;
 		}
@@ -202,6 +198,7 @@ public class Scheduler {
 		if (elevatorQueue.isEmpty()) {
 			return;
 		}
+		currentDestinations[m.getElevator()] = elevatorQueue.peek();
 		sendToElevator(directElevatorTo(m.getFloor(), elevatorQueue.peek()), m.getElevator());
 		return;
 	}
@@ -224,6 +221,7 @@ public class Scheduler {
 		System.out.println("Scheduler: Elevator " + m.getElevator() + elevatorQueue.toString());
 
 		// send the elevator on its way
+		currentDestinations[m.getElevator()] = elevatorQueue.peek();
 		sendToElevator(directElevatorTo(m.getCurrent(), elevatorQueue.peek()), m.getElevator());
 	}
 
@@ -363,7 +361,7 @@ public class Scheduler {
 				} else {
 					// soft fault, resend message
 
-					int destination = queues[i].peek();
+					int destination = currentDestinations[i];
 					sendToElevator(directElevatorTo(elevators[i].getFloor(), destination), i);
 				}
 			}
@@ -402,5 +400,19 @@ public class Scheduler {
 		System.out.println("Scheduler: Starting on port 3000");
 		Scheduler sched = new Scheduler();
 		sched.run();
+	}
+
+	/**
+	 * @return the currentDestinations
+	 */
+	public int[] getcurrentDestinations() {
+		return currentDestinations;
+	}
+
+	/**
+	 * @param currentDestinations the currentDestinations to set
+	 */
+	public void setcurrentDestinations(int[] currentDestinations) {
+		this.currentDestinations = currentDestinations;
 	}
 }
