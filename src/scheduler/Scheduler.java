@@ -358,9 +358,11 @@ public class Scheduler {
 				if (elevators[i].isMoving()) {
 					// Elevator was resent last message and still hasn't responded.
 					// This can now be considered a faulty elevator.
+
 					// Don't remove the elevator if it's queue is empty. That just means
 					// it has no work to do.
 					if (!queues[i].isEmpty()) {
+						System.out.println("Scheduler: Hard fault on elevator " + i);
 						removeElevator(i);
 					}
 					return 1;
