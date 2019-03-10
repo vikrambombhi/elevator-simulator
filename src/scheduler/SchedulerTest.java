@@ -12,5 +12,6 @@ public class SchedulerTest extends TestCase {
 
 	@Test
 	public void testDeleteElevator() {
+		Scheduler s = new Scheduler();
 	}
 }

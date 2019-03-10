@@ -415,4 +415,9 @@ public class Scheduler {
 	public void setcurrentDestinations(int[] currentDestinations) {
 		this.currentDestinations = currentDestinations;
 	}
+
+    // Use this to mock last responses
+    public void setLastResponses(int id, long value) {
+        lastResponses[id] = value;
+    }
 }
