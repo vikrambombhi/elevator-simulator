@@ -12,10 +12,6 @@ import org.junit.Test;
 import junit.framework.TestCase;
 
 public class SchedulerTest extends TestCase {
-	@Before
-	public void setup() {
-	}
-
 	@Test
 	public void testHandleUnresponsiveElevators() {
 		Scheduler s = new Scheduler();
@@ -34,7 +30,7 @@ public class SchedulerTest extends TestCase {
 		s.setLastResponses(1, now + 10 * 1000);
 		s.setLastResponses(2, now + 10 * 1000);
 
-		// simulate the elevator moving to be considerd a hard fault
+		// simulate the elevator moving to be considered a hard fault
 		Elevator e = new Elevator(0);
 		e.setState(Elevator.State.MOVING_UP);
 		s.setElevator(0, e);
@@ -53,6 +49,7 @@ public class SchedulerTest extends TestCase {
 		assertEquals(s.getQueue(0), null);
 		assertEquals(3, q1.peek());
 		assertEquals(5, q2.peek());
+
 		s.close();
 	}
 
@@ -65,14 +62,14 @@ public class SchedulerTest extends TestCase {
 
 		assertEquals(3, q.peek());
 
-		// hard fault on elevator 0
+		// soft fault on elevator 0
 		long now = System.currentTimeMillis();
 		// ensures it's at least 2 seconds in the past
 		s.setLastResponses(0, now - 3 * 1000);
 		s.setLastResponses(1, now + 10 * 1000);
 		s.setLastResponses(2, now + 10 * 1000);
 
-		// simulate the elevator moving to be considerd a hard fault
+		// simulate the elevator stopped to be considered a soft fault
 		Elevator e = new Elevator(0);
 		e.setState(State.STOPPED_DOORS_CLOSED);
 		s.setElevator(0, e);
@@ -84,6 +81,5 @@ public class SchedulerTest extends TestCase {
 		assert (s.getQueue(0) != null);
 
 		s.close();
-
 	}
 }
