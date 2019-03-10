@@ -160,9 +160,10 @@ public class Scheduler {
 			}
             if (smallestQueue == null) {
                 smallestQueue = queues[i];
+				smallestQueueIndex = i;
                 continue;
             }
-			if (queues[i].size() <= smallestQueue.size()) {
+			if (queues[i].size() < smallestQueue.size()) {
 				smallestQueue = queues[i];
 				smallestQueueIndex = i;
 			}
