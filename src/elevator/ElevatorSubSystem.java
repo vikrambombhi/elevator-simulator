@@ -81,10 +81,8 @@ public class ElevatorSubSystem implements Runnable {
 	 */
 	public void handleMessage(Message m) {
 		// State machine switch
-		//ignore if softfaultFlag = true
 		if (m instanceof ElevatorMessage) {
 			// scheduler tells the elevator to move, stop, open or close.
-			
 			elevator.handleElevatorMessage((ElevatorMessage) m);
 
 			if (elevator.isMoving()) {
