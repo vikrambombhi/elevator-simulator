@@ -18,8 +18,8 @@ import messages.Message;
 public class Scheduler {
 	public static String HOST = "127.0.0.1";
 	public static short PORT = 3000;
-	// 2 seconds which is 4 times the SimulationVars.elevatorTravelTime
-	private static long FAULT_INTERVAL = 2 * 1000; // 2 seconds
+	// 10 seconds which is 4 times the SimulationVars.elevatorTravelTime
+	private static long FAULT_INTERVAL = 10 * 1000 / SimulationVars.timeScalar; // 10 seconds
 
 	private DatagramSocket recvSock, sendSock;
 	private ElevatorQueue[] queues;
@@ -224,7 +224,6 @@ public class Scheduler {
 		}
 		// enqueues requested floors
 		addDropOffAndSort(m.getElevator(), m.getDestination());
-		System.out.println("Scheduler: Elevator " + m.getElevator() + elevatorQueue.toString());
 
 		// send the elevator on its way
 		currentDestinations[m.getElevator()] = elevatorQueue.peek();
@@ -341,7 +340,7 @@ public class Scheduler {
 				while (!Thread.currentThread().isInterrupted()) {
 					handleUnresponsiveElevators();
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(1000 / SimulationVars.timeScalar);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt(); // persist the interrupt flag
 					}
@@ -358,7 +357,8 @@ public class Scheduler {
 				// Elevator is unregistered, ignore it.
 				continue;
 			}
-			if (now - last > FAULT_INTERVAL) {
+            long diff = (now - last) / SimulationVars.timeScalar;
+			if (diff > FAULT_INTERVAL) {
 				// check state. Is it
 				if (elevators[i].isMoving()) {
 					// Elevator was resent last message and still hasn't responded.
