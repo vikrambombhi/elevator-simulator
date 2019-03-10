@@ -22,7 +22,7 @@ public class ElevatorRequestMessage implements Message, Serializable {
 	public ElevatorRequestMessage() {
 	}
 
-	public ElevatorRequestMessage(Direction direction, int destinationFloor, int originFloor) {
+	public ElevatorRequestMessage(Direction direction, int originFloor) {
 		this.direction = direction;
 		this.originFloor = originFloor;
 	}
