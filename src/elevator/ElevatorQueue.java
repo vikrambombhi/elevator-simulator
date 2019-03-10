@@ -15,6 +15,7 @@ public class ElevatorQueue {
 	public ElevatorQueue() {
 		pickUpQueue = new LinkedList<Integer>();
 		dropOffQueue = new LinkedList<Integer>();
+        direction = Direction.UP;
 	}
 
 	public boolean isEmpty() {
