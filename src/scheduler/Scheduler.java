@@ -176,14 +176,14 @@ public class Scheduler {
 		// update elevator model
 		elevators[m.getElevator()].setFloor(m.getFloor());
 		ElevatorQueue elevatorQueue = queues[m.getElevator()];
-        switch(elevatorQueue.getDirection()) {
-            case UP:
-                elevators[m.getElevator()].setState(Elevator.State.MOVING_UP);
-                break;
-            case DOWN:
-                elevators[m.getElevator()].setState(Elevator.State.MOVING_DOWN);
-                break;
-        }
+		switch (elevatorQueue.getDirection()) {
+		case UP:
+			elevators[m.getElevator()].setState(Elevator.State.MOVING_UP);
+			break;
+		case DOWN:
+			elevators[m.getElevator()].setState(Elevator.State.MOVING_DOWN);
+			break;
+		}
 
 		if (elevatorQueue.isEmpty()) {
 			return;
@@ -208,8 +208,8 @@ public class Scheduler {
 
 	private synchronized void handleFloorRequest(FloorRequestMessage m) {
 		// This means that an elevator is leaving a floor and we know what floor buttons
-        // were pressed. The elevator must be at a stopped state.
-        elevators[m.getElevator()].setState(Elevator.State.STOPPED_DOORS_CLOSED);
+		// were pressed. The elevator must be at a stopped state.
+		elevators[m.getElevator()].setState(Elevator.State.STOPPED_DOORS_CLOSED);
 
 		ElevatorQueue elevatorQueue = queues[m.getElevator()];
 		if (!elevatorQueue.isEmpty()) {
@@ -257,12 +257,12 @@ public class Scheduler {
 	private void defaultQueueSort(int elevatorId) {
 		// Continue sorting in the direction the queue is in.
 		switch (queues[elevatorId].getDirection()) {
-			case UP:
-				queues[elevatorId].sortUp();
-				break;
-			case DOWN:
-				queues[elevatorId].sortDown();
-				break;
+		case UP:
+			queues[elevatorId].sortUp();
+			break;
+		case DOWN:
+			queues[elevatorId].sortDown();
+			break;
 		}
 	}
 
@@ -362,6 +362,9 @@ public class Scheduler {
 					removeElevator(i);
 				} else {
 					// soft fault, resend message
+
+					int destination = queues[i].peek();
+					sendToElevator(directElevatorTo(elevators[i].getFloor(), destination), i);
 				}
 			}
 		}
