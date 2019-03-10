@@ -13,7 +13,7 @@ public class Elevator {
 
 	// State is the possible states that the elevator can be in.
 	public enum State {
-		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED, SOFT_FAULT, HARD_FAULT
+		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED, SOFT_FAULT
 	}
 
 	private int id;
