@@ -93,7 +93,7 @@ public class Scheduler {
 	// request is determined by it's qualification on different priority levels.
 	// If no elevators satisfy priority 1, then the best elevator for priority 2
 	// will be chosen and etc.
-	private synchronized void handleElevatorRequest(ElevatorRequestMessage m) {
+	public synchronized void handleElevatorRequest(ElevatorRequestMessage m) {
 		// Priority 1: Elevator queues with no work.
 		Integer emptyQueueIndex = null;
 		for (int i = 0; i < queues.length; i++) {
@@ -102,6 +102,7 @@ public class Scheduler {
 			}
 			if (queues[i].isEmpty()) {
 				emptyQueueIndex = i;
+				break;
 			}
 		}
 		if (emptyQueueIndex != null) {
@@ -344,7 +345,7 @@ public class Scheduler {
 		});
 	}
 
-	private synchronized void handleUnresponsiveElevators() {
+	public synchronized void handleUnresponsiveElevators() {
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < lastResponses.length; i++) {
 			long last = lastResponses[i];
@@ -420,4 +421,13 @@ public class Scheduler {
     public void setLastResponses(int id, long value) {
         lastResponses[id] = value;
     }
+
+	// Get queue to evaluate in tests
+	public ElevatorQueue getQueue(int id) {
+		return queues[id];
+	}
+
+	public void setElevator(int id, Elevator e) {
+		elevators[id] = e;
+	}
 }
