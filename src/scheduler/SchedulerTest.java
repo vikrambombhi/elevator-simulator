@@ -23,7 +23,7 @@ public class SchedulerTest extends TestCase {
 
 		// hard fault on elevator 0
 		long now = System.currentTimeMillis();
-		// ensures it's at least 2 seconds in the past
+		// ensures it's at least 10 seconds in the past
 		s.setLastResponses(0, now - 11 * 1000);
 		s.setLastResponses(1, now + 5 * 1000);
 		s.setLastResponses(2, now + 5 * 1000);
@@ -62,7 +62,7 @@ public class SchedulerTest extends TestCase {
 
 		// soft fault on elevator 0
 		long now = System.currentTimeMillis();
-		// ensures it's at least 2 seconds in the past
+		// ensures it's at least 10 seconds in the past
 		s.setLastResponses(0, now - 11 * 1000);
 		s.setLastResponses(1, now + 5 * 1000);
 		s.setLastResponses(2, now + 5 * 1000);

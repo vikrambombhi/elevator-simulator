@@ -18,7 +18,7 @@ import messages.Message;
 public class Scheduler {
 	public static String HOST = "127.0.0.1";
 	public static short PORT = 3000;
-	// 10 seconds which is 4 times the SimulationVars.elevatorTravelTime
+	// 10 seconds which is 2 times the SimulationVars.elevatorTravelTime
 	private static long FAULT_INTERVAL = 10 * 1000 / SimulationVars.timeScalar; // 10 seconds
 
 	private DatagramSocket recvSock, sendSock;
