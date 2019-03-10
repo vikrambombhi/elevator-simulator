@@ -13,12 +13,13 @@ public class Elevator {
 
 	// State is the possible states that the elevator can be in.
 	public enum State {
-		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED, SOFT_FAULT
+		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED
 	}
 
 	private int id;
 	private int floor;
 	private State state;
+	private boolean fault = false;
 
 	// Simulates the physical components attached to the elevator.
 	private Motor motor;
@@ -56,6 +57,10 @@ public class Elevator {
 		return state == State.MOVING_UP || state == State.MOVING_DOWN;
 	}
 
+	public void setFault(boolean fault) {
+		this.fault = fault;
+	}
+
 	/*
 	 * handleElevatorMessage handles commands for the elevator's physical
 	 * components.
@@ -78,17 +83,17 @@ public class Elevator {
 			break;
 
 		case GOUP:
-            if (state != State.SOFT_FAULT) {
+            if (this.fault == false) {
                 assert (state == State.STOPPED_DOORS_CLOSED);
                 motor.move(Motor.Direction.UP);
                 state = State.MOVING_UP;
             } else {
-                state = State.STOPPED_DOORS_CLOSED;
+				this.fault = false;
             }
 			break;
 
 		case GODOWN:
-            if (state != State.SOFT_FAULT) {
+            if (this.fault == false) {
                 assert (state == State.STOPPED_DOORS_CLOSED);
                 motor.move(Motor.Direction.DOWN);
                 state = State.MOVING_DOWN;

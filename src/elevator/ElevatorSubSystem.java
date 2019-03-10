@@ -97,7 +97,7 @@ public class ElevatorSubSystem implements Runnable {
 			if (((FaultMessage) m).getHardFault()) {
 				hardFaultFlag = true;
 			} else {
-				elevator.setState(Elevator.State.SOFT_FAULT);
+                elevator.setFault(true);
 			}
 		}
 	}
