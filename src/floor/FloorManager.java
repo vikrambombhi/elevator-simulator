@@ -14,14 +14,14 @@ public class FloorManager {
 		faultSimulator.start();
 		floorSubsystems = new Thread[SimulationVars.numberOfFloors];
 
-		for (int i = 0; i < SimulationVars.numberOfFloors; i ++) {
+		for (int i = 0; i < SimulationVars.numberOfFloors; i++) {
 			boolean isBot = false;
 			boolean isTop = false;
 
 			if (i == 0) {
 				isBot = true;
 			}
-			if (i == SimulationVars.numberOfFloors-1) {
+			if (i == SimulationVars.numberOfFloors - 1) {
 				isTop = true;
 			}
 
@@ -29,8 +29,11 @@ public class FloorManager {
 			floorSubsystems[i].start();
 		}
 
-        for (Thread t : floorSubsystems) {
-            try { t.join(); } catch (InterruptedException e) { }
-        }
+		for (Thread t : floorSubsystems) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 }

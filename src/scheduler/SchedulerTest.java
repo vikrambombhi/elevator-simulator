@@ -1,15 +1,13 @@
 package scheduler;
 
-import messages.ElevatorRequestMessage;
-import messages.ElevatorRequestMessage.Direction;
+import org.junit.Test;
+
 import elevator.Elevator;
 import elevator.Elevator.State;
 import elevator.ElevatorQueue;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import junit.framework.TestCase;
+import messages.ElevatorRequestMessage;
+import messages.ElevatorRequestMessage.Direction;
 
 public class SchedulerTest extends TestCase {
 	@Test
@@ -26,9 +24,9 @@ public class SchedulerTest extends TestCase {
 		// hard fault on elevator 0
 		long now = System.currentTimeMillis();
 		// ensures it's at least 2 seconds in the past
-		s.setLastResponses(0, now - 3 * 1000);
-		s.setLastResponses(1, now + 10 * 1000);
-		s.setLastResponses(2, now + 10 * 1000);
+		s.setLastResponses(0, now - 11 * 1000);
+		s.setLastResponses(1, now + 5 * 1000);
+		s.setLastResponses(2, now + 5 * 1000);
 
 		// simulate the elevator moving to be considered a hard fault
 		Elevator e = new Elevator(0);
@@ -65,9 +63,9 @@ public class SchedulerTest extends TestCase {
 		// soft fault on elevator 0
 		long now = System.currentTimeMillis();
 		// ensures it's at least 2 seconds in the past
-		s.setLastResponses(0, now - 3 * 1000);
-		s.setLastResponses(1, now + 10 * 1000);
-		s.setLastResponses(2, now + 10 * 1000);
+		s.setLastResponses(0, now - 11 * 1000);
+		s.setLastResponses(1, now + 5 * 1000);
+		s.setLastResponses(2, now + 5 * 1000);
 
 		// simulate the elevator stopped to be considered a soft fault
 		Elevator e = new Elevator(0);

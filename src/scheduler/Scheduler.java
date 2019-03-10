@@ -18,8 +18,8 @@ import messages.Message;
 public class Scheduler {
 	public static String HOST = "127.0.0.1";
 	public static short PORT = 3000;
-	// 2 seconds which is 4 times the SimulationVars.elevatorTravelTime
-	private static long FAULT_INTERVAL = 2 * 1000; // 2 seconds
+	// 10 seconds which is 4 times the SimulationVars.elevatorTravelTime
+	private static long FAULT_INTERVAL = 10 * 1000 / SimulationVars.timeScalar; // 10 seconds
 
 	private DatagramSocket recvSock, sendSock;
 	private ElevatorQueue[] queues;
@@ -152,12 +152,17 @@ public class Scheduler {
 
 		// Priority 3: Elevators with the smallest work queue.
 		// find smallest queue size
-		ElevatorQueue smallestQueue = queues[0];
+		ElevatorQueue smallestQueue = null;
 		Integer smallestQueueIndex = null;
-		for (int i = 1; i < queues.length; i++) {
+		for (int i = 0; i < queues.length; i++) {
 			if (queues[i] == null) {
 				continue;
 			}
+            if (smallestQueue == null) {
+                smallestQueue = queues[i];
+				smallestQueueIndex = i;
+                continue;
+            }
 			if (queues[i].size() < smallestQueue.size()) {
 				smallestQueue = queues[i];
 				smallestQueueIndex = i;
@@ -219,7 +224,6 @@ public class Scheduler {
 		}
 		// enqueues requested floors
 		addDropOffAndSort(m.getElevator(), m.getDestination());
-		System.out.println("Scheduler: Elevator " + m.getElevator() + elevatorQueue.toString());
 
 		// send the elevator on its way
 		currentDestinations[m.getElevator()] = elevatorQueue.peek();
@@ -336,7 +340,7 @@ public class Scheduler {
 				while (!Thread.currentThread().isInterrupted()) {
 					handleUnresponsiveElevators();
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(1000 / SimulationVars.timeScalar);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt(); // persist the interrupt flag
 					}
@@ -353,14 +357,17 @@ public class Scheduler {
 				// Elevator is unregistered, ignore it.
 				continue;
 			}
-			if (now - last > FAULT_INTERVAL) {
+            long diff = (now - last) / SimulationVars.timeScalar;
+			if (diff > FAULT_INTERVAL) {
 				// check state. Is it
 				if (elevators[i].isMoving()) {
 					// Elevator was resent last message and still hasn't responded.
 					// This can now be considered a faulty elevator.
+
 					// Don't remove the elevator if it's queue is empty. That just means
 					// it has no work to do.
 					if (!queues[i].isEmpty()) {
+						System.out.println("Scheduler: Hard fault on elevator " + i);
 						removeElevator(i);
 					}
 					return 1;
@@ -368,6 +375,22 @@ public class Scheduler {
 					// soft fault, resend message
 
 					int destination = currentDestinations[i];
+					if (destination == elevators[i].getFloor()) {
+						// System.out.print("Scheduler: elevator soft faulted on destination floor,
+						// ignoring.");
+						return 0;
+					}
+					System.out.println(
+							"Scheduler: elevator soft faulted, sending elevator " + i + " to floor " + destination);
+					if (destination == elevators[i].getFloor()) {
+						destination = queues[i].peek();
+						if (destination == -1) {
+							// do nothing, detected soft fault with no where to go
+							return 0;
+						}
+						System.out.println(
+								"Scheduler: elevator soft faulted at destination, now sending it to " + destination);
+					}
 					sendToElevator(directElevatorTo(elevators[i].getFloor(), destination), i);
 					return 2;
 				}
@@ -437,4 +460,5 @@ public class Scheduler {
 	public void setElevator(int id, Elevator e) {
 		elevators[id] = e;
 	}
+
 }
