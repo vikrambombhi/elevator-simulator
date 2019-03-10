@@ -1,15 +1,13 @@
 package scheduler;
 
-import messages.ElevatorRequestMessage;
-import messages.ElevatorRequestMessage.Direction;
+import org.junit.Test;
+
 import elevator.Elevator;
 import elevator.Elevator.State;
 import elevator.ElevatorQueue;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import junit.framework.TestCase;
+import messages.ElevatorRequestMessage;
+import messages.ElevatorRequestMessage.Direction;
 
 public class SchedulerTest extends TestCase {
 	@Test

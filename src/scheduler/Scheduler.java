@@ -368,6 +368,22 @@ public class Scheduler {
 					// soft fault, resend message
 
 					int destination = currentDestinations[i];
+					if (destination == elevators[i].getFloor()) {
+						// System.out.print("Scheduler: elevator soft faulted on destination floor,
+						// ignoring.");
+						return 0;
+					}
+					System.out.println(
+							"Scheduler: elevator soft faulted, sending elevator " + i + " to floor " + destination);
+					if (destination == elevators[i].getFloor()) {
+						destination = queues[i].peek();
+						if (destination == -1) {
+							// do nothing, detected soft fault with no where to go
+							return 0;
+						}
+						System.out.println(
+								"Scheduler: elevator soft faulted at destination, now sending it to " + destination);
+					}
 					sendToElevator(directElevatorTo(elevators[i].getFloor(), destination), i);
 					return 2;
 				}
@@ -437,4 +453,5 @@ public class Scheduler {
 	public void setElevator(int id, Elevator e) {
 		elevators[id] = e;
 	}
+
 }

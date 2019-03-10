@@ -9,7 +9,7 @@ public class ElevatorManager {
 
 	ElevatorManager(int numberOfElevators) {
 		elevatorSubSystems = new ElevatorSubSystem[numberOfElevators];
-		for (int i = 0; i < elevatorSubSystems.length; i ++) {
+		for (int i = 0; i < elevatorSubSystems.length; i++) {
 			elevatorSubSystems[i] = new ElevatorSubSystem(i);
 		}
 	}
@@ -20,18 +20,21 @@ public class ElevatorManager {
 
 	public void run() {
 		elevatorThreads = new Thread[elevatorSubSystems.length];
-		for (int i = 0; i < elevatorSubSystems.length; i ++) {
+		for (int i = 0; i < elevatorSubSystems.length; i++) {
 			Thread t = new Thread(elevatorSubSystems[i]);
 			t.start();
 			elevatorThreads[i] = t;
 		}
 		for (Thread t : elevatorThreads) {
-			try { t.join(); } catch (InterruptedException e) { }
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+			}
 		}
 	}
 
 	public void close() {
-		for (int i = 0; i < elevatorSubSystems.length; i ++) {
+		for (int i = 0; i < elevatorSubSystems.length; i++) {
 			elevatorThreads[i].interrupt();
 		}
 	}
