@@ -25,7 +25,7 @@ public class ElevatorSubSystem implements Runnable {
 	// Communication sockets
 	private DatagramSocket sendSocket, receiveSocket;
 	
-	private boolean softFaultFlag, hardFaultFlag = false;
+	private boolean hardFaultFlag = false;
 
 	public ElevatorSubSystem(int id) {
 		elevator = new Elevator(id);
@@ -82,7 +82,7 @@ public class ElevatorSubSystem implements Runnable {
 	public void handleMessage(Message m) {
 		// State machine switch
 		//ignore if softfaultFlag = true
-		if (m instanceof ElevatorMessage && !softFaultFlag) {
+		if (m instanceof ElevatorMessage) {
 			// scheduler tells the elevator to move, stop, open or close.
 			
 			elevator.handleElevatorMessage((ElevatorMessage) m);
@@ -99,11 +99,9 @@ public class ElevatorSubSystem implements Runnable {
 			if (((FaultMessage) m).getHardFault()) {
 				hardFaultFlag = true;
 			} else {
-				softFaultFlag = true;
+				elevator.setState(Elevator.State.SOFT_FAULT);
 			}
 		}
-		//reset the soft fault flag
-		softFaultFlag = false;
 	}
 
 	private void sendTravelMessage() {

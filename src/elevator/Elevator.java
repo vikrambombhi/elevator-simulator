@@ -13,7 +13,7 @@ public class Elevator {
 
 	// State is the possible states that the elevator can be in.
 	public enum State {
-		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED
+		MOVING_UP, MOVING_DOWN, STOPPED_DOORS_CLOSED, STOPPED_DOORS_OPENED, SOFT_FAULT, HARD_FAULT
 	}
 
 	private int id;
@@ -78,15 +78,23 @@ public class Elevator {
 			break;
 
 		case GOUP:
-			assert (state == State.STOPPED_DOORS_CLOSED);
-			motor.move(Motor.Direction.UP);
-			state = State.MOVING_UP;
+            if (state != State.SOFT_FAULT) {
+                assert (state == State.STOPPED_DOORS_CLOSED);
+                motor.move(Motor.Direction.UP);
+                state = State.MOVING_UP;
+            } else {
+                state = State.STOPPED_DOORS_CLOSED;
+            }
 			break;
 
 		case GODOWN:
-			assert (state == State.STOPPED_DOORS_CLOSED);
-			motor.move(Motor.Direction.DOWN);
-			state = State.MOVING_DOWN;
+            if (state != State.SOFT_FAULT) {
+                assert (state == State.STOPPED_DOORS_CLOSED);
+                motor.move(Motor.Direction.DOWN);
+                state = State.MOVING_DOWN;
+            } else {
+                state = State.STOPPED_DOORS_CLOSED;
+            }
 			break;
 		default:
 			System.out.println("Elevator: ElevatorMessage type case not handled: " + m.getMessageType());
