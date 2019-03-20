@@ -21,7 +21,7 @@ elevator: build
 	java -cp build/ elevator.ElevatorManager
 
 scheduler: build
-	java -cp build/ scheduler.Scheduler
+	java -cp build/ scheduler.SchedulerSubSystem
 
 floor: build
 	java -cp build/ floor.FloorManager
