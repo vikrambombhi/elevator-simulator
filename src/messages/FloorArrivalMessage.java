@@ -10,7 +10,7 @@ import messages.ElevatorRequestMessage.Direction;
 public class FloorArrivalMessage implements Message, Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4085784915939113686L;
 
@@ -18,7 +18,7 @@ public class FloorArrivalMessage implements Message, Serializable {
 	private int floor;
 	private Direction direction;
 
-	public FloorArrivalMessage(int fl, int el, Direction dir, ArrayList<Integer> dests) {
+	public FloorArrivalMessage(int fl, int el, Direction dir) {
 		floor = fl;
 		elevator = el;
 		direction = dir;
