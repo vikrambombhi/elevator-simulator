@@ -44,12 +44,11 @@ public class FaultDetector implements Runnable {
 
         for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
             ElevatorShaft shaft = scheduler.getElevatorShaft(i);
+            if (shaft == null) {
+                // Elevator is unregistered, ignore it.
+                continue;
+            }
             synchronized (shaft) {
-                if (shaft == null) {
-                    // Elevator is unregistered, ignore it.
-                    continue;
-                }
-
                 long last = shaft.getLastResponse();
                 long diff = (now - last) / SimulationVars.timeScalar;
                 if (diff > FAULT_INTERVAL) {

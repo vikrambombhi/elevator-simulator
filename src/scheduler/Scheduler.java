@@ -120,11 +120,11 @@ public class Scheduler {
     public void updateQueueState(Direction dir, int elevatorId, int floor) {
         ElevatorShaft shaft = elevatorShafts[elevatorId];
         synchronized (shaft) {
+            // update elevator model
             shaft.setLastResponse(System.currentTimeMillis());
             shaft.getElevator().setFloor(floor);
             ElevatorQueue elevatorQueue = shaft.getQueue();
 
-            // update elevator model
             switch (elevatorQueue.getDirection()) {
                 case UP:
                     shaft.getElevator().setState(Elevator.State.MOVING_UP);
@@ -168,9 +168,9 @@ public class Scheduler {
 
             ElevatorQueue elevatorQueue = shaft.getQueue();
             if (!elevatorQueue.isEmpty()) {
-                destination = elevatorQueue.peek();
-                if (destination == currentFloor) {
-                    System.out.printf("Scheduler: Elevator %d dequeuing floor %d\n", elevatorId, destination);
+                int nextFloor = elevatorQueue.peek();
+                if (nextFloor == currentFloor) {
+                    System.out.printf("Scheduler: Elevator %d dequeuing floor %d\n", elevatorId, nextFloor);
                     elevatorQueue.remove();
                 }
             }

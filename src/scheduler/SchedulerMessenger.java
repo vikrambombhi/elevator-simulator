@@ -39,7 +39,6 @@ public class SchedulerMessenger {
 
 	// receive continuously blocks and listens for packets from elevators or floors
 	public Message receive() {
-		System.out.println("Scheduler: Waiting for message");
 		return Message.deserialize(Message.receive(recvSock).getData());
 	}
 
