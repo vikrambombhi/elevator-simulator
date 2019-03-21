@@ -3,7 +3,8 @@
 make: build
 
 build:
-	mkdir -p build
+	mkdir -p build/src
+	cp src/input.txt build/src/input.txt
 	javac -cp src/:vendor/junit-4.10.jar src/**/*.java -d build/
 
 run: build
@@ -21,7 +22,7 @@ elevator: build
 	java -cp build/ elevator.ElevatorManager
 
 scheduler: build
-	java -cp build/ scheduler.Scheduler
+	java -cp build/ scheduler.SchedulerSubSystem
 
 floor: build
 	java -cp build/ floor.FloorManager
