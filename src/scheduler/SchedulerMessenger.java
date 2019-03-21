@@ -17,8 +17,6 @@ import messages.FloorRequestMessage;
 import messages.Message;
 
 public class SchedulerMessenger {
-	public static String HOST = "127.0.0.1";
-	public static short PORT = 3000;
 	private DatagramSocket recvSock, sendSock;
 
 	public SchedulerMessenger() {
@@ -26,7 +24,7 @@ public class SchedulerMessenger {
 			// Construct a datagram socket and bind it to port 3000
 			// on the local host machine. This socket will be used to
 			// receive UDP Datagram packets.
-			recvSock = new DatagramSocket(PORT);
+			recvSock = new DatagramSocket(SimulationVars.schedulerPort);
 			sendSock = new DatagramSocket();
 
 			// to test socket timeout (2 seconds)

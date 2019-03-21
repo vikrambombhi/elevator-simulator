@@ -18,13 +18,13 @@ import messages.Message;
 public class SchedulerSubSystem {
 	private Scheduler scheduler;
 	private SchedulerMessenger messenger;
-	private FaultDetector faultDetector;
 	private Thread faultDetectorThread;
 
 	public SchedulerSubSystem() {
 		messenger = new SchedulerMessenger();
 		scheduler = new Scheduler(messenger);
-		faultDetector = new FaultDetector(scheduler, messenger);
+
+		FaultDetector faultDetector = new FaultDetector(scheduler, messenger);
 		faultDetectorThread = new Thread(faultDetector);
 	}
 
