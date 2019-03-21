@@ -42,7 +42,7 @@ public class SchedulerSubSystem {
 		}
 	}
 
-	public void handleElevatorRequest(ElevatorRequestMessage m) {
+	private void handleElevatorRequest(ElevatorRequestMessage m) {
 		if (!scheduler.anyAvailableElevators()) {
 			close();
 			System.out.println("SchedulerSubSystem: No more available elevators, exiting");
