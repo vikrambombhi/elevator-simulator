@@ -4,6 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.concurrent.*;
+import java.util.ArrayList;
 
 import elevator.Elevator;
 import elevator.ElevatorQueue;
@@ -21,8 +22,15 @@ public class SchedulerSubSystem {
 	private SchedulerMessenger messenger;
 	private Thread faultDetectorThread;
 	private ExecutorService threadPool = Executors.newFixedThreadPool(3);
+	private ArrayList<Long> ElevatorRequestTimes;
+	private ArrayList<Long> FloorArrivalTimes;
+	private ArrayList<Long> FloorRequestTimes;
 
 	public SchedulerSubSystem() {
+		ElevatorRequestTimes = new ArrayList<Long>();
+		FloorArrivalTimes = new ArrayList<Long>();
+		FloorRequestTimes = new ArrayList<Long>();
+
 		messenger = new SchedulerMessenger();
 		scheduler = new Scheduler(messenger);
 
@@ -37,26 +45,32 @@ public class SchedulerSubSystem {
 
 
 		if (m instanceof ElevatorRequestMessage) {
+			Long initTime = System.nanoTime();
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
 					handleElevatorRequest((ElevatorRequestMessage) m);
 				}
 			});
+			ElevatorRequestTimes.add(initTime - System.nanoTime());
 		} else if (m instanceof FloorArrivalMessage) {
+			Long initTime = System.nanoTime();
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
 					handleFloorArrival((FloorArrivalMessage) m);
 				}
 			});
+			FloorArrivalTimes.add(initTime - System.nanoTime());
 		} else if (m instanceof FloorRequestMessage) {
+			Long initTime = System.nanoTime();
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
 					handleFloorRequest((FloorRequestMessage) m);
 				}
 			});
+			FloorRequestTimes.add(initTime - System.nanoTime());
 		}
 	}
 
