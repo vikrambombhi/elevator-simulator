@@ -5,6 +5,8 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.concurrent.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import elevator.Elevator;
 import elevator.ElevatorQueue;
@@ -22,14 +24,14 @@ public class SchedulerSubSystem {
 	private SchedulerMessenger messenger;
 	private Thread faultDetectorThread;
 	private ExecutorService threadPool;
-	private ArrayList<Long> ElevatorRequestTimes;
-	private ArrayList<Long> FloorArrivalTimes;
-	private ArrayList<Long> FloorRequestTimes;
+	private List<Long> elevatorRequestTimes;
+	private List<Long> floorArrivalTimes;
+	private List<Long> floorRequestTimes;
 
 	public SchedulerSubSystem() {
-		ElevatorRequestTimes = new ArrayList<Long>();
-		FloorArrivalTimes = new ArrayList<Long>();
-		FloorRequestTimes = new ArrayList<Long>();
+		elevatorRequestTimes = Collections.synchronizedList(new ArrayList<Long>());
+		floorArrivalTimes = Collections.synchronizedList(new ArrayList<Long>());
+		floorRequestTimes = Collections.synchronizedList(new ArrayList<Long>());
 		threadPool = Executors.newFixedThreadPool(SimulationVars.numberOfElevators);
 
 		messenger = new SchedulerMessenger();
@@ -51,27 +53,27 @@ public class SchedulerSubSystem {
 				@Override
 				public void run() {
 					handleElevatorRequest((ElevatorRequestMessage) m);
+					elevatorRequestTimes.add(initTime - System.nanoTime());
 				}
 			});
-			ElevatorRequestTimes.add(initTime - System.nanoTime());
 		} else if (m instanceof FloorArrivalMessage) {
 			Long initTime = System.nanoTime();
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
 					handleFloorArrival((FloorArrivalMessage) m);
+					floorArrivalTimes.add(initTime - System.nanoTime());
 				}
 			});
-			FloorArrivalTimes.add(initTime - System.nanoTime());
 		} else if (m instanceof FloorRequestMessage) {
 			Long initTime = System.nanoTime();
 			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
 					handleFloorRequest((FloorRequestMessage) m);
+					floorRequestTimes.add(initTime - System.nanoTime());
 				}
 			});
-			FloorRequestTimes.add(initTime - System.nanoTime());
 		}
 	}
 
