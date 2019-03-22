@@ -3,6 +3,7 @@ package scheduler;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.concurrent.*;
 
 import elevator.Elevator;
 import elevator.ElevatorQueue;
@@ -19,6 +20,7 @@ public class SchedulerSubSystem {
 	private Scheduler scheduler;
 	private SchedulerMessenger messenger;
 	private Thread faultDetectorThread;
+	private ExecutorService threadPool = Executors.newFixedThreadPool(3);
 
 	public SchedulerSubSystem() {
 		messenger = new SchedulerMessenger();
@@ -33,12 +35,28 @@ public class SchedulerSubSystem {
 
 		Message m = messenger.receive();
 
+
 		if (m instanceof ElevatorRequestMessage) {
-			handleElevatorRequest((ElevatorRequestMessage) m);
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run() {
+					handleElevatorRequest((ElevatorRequestMessage) m);
+				}
+			});
 		} else if (m instanceof FloorArrivalMessage) {
-			handleFloorArrival((FloorArrivalMessage) m);
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run() {
+					handleFloorArrival((FloorArrivalMessage) m);
+				}
+			});
 		} else if (m instanceof FloorRequestMessage) {
-			handleFloorRequest((FloorRequestMessage) m);
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run() {
+					handleFloorRequest((FloorRequestMessage) m);
+				}
+			});
 		}
 	}
 
@@ -85,8 +103,8 @@ public class SchedulerSubSystem {
 	}
 
 	public static void main(String args[]) {
-			System.out.println("Scheduler: Starting on port 3000");
-			SchedulerSubSystem s = new SchedulerSubSystem();
-			s.run();
-		}
+		System.out.println("Scheduler: Starting on port 3000");
+		SchedulerSubSystem s = new SchedulerSubSystem();
+		s.run();
 	}
+}
