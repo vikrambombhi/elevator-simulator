@@ -21,7 +21,7 @@ public class SchedulerSubSystem {
 	private Scheduler scheduler;
 	private SchedulerMessenger messenger;
 	private Thread faultDetectorThread;
-	private ExecutorService threadPool = Executors.newFixedThreadPool(3);
+	private ExecutorService threadPool;
 	private ArrayList<Long> ElevatorRequestTimes;
 	private ArrayList<Long> FloorArrivalTimes;
 	private ArrayList<Long> FloorRequestTimes;
@@ -30,6 +30,7 @@ public class SchedulerSubSystem {
 		ElevatorRequestTimes = new ArrayList<Long>();
 		FloorArrivalTimes = new ArrayList<Long>();
 		FloorRequestTimes = new ArrayList<Long>();
+		threadPool = Executors.newFixedThreadPool(SimulationVars.numberOfElevators);
 
 		messenger = new SchedulerMessenger();
 		scheduler = new Scheduler(messenger);
