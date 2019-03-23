@@ -1,21 +1,14 @@
 package scheduler;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.util.concurrent.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import elevator.Elevator;
-import elevator.ElevatorQueue;
 import floor.SimulationVars;
-import messages.ElevatorMessage;
-import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
-import messages.ElevatorRequestMessage.Direction;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
@@ -48,7 +41,6 @@ public class SchedulerSubSystem {
 		System.out.println("SchedulerSubSystem: Waiting for message");
 
 		Message m = messenger.receive();
-
 
 		if (m instanceof ElevatorRequestMessage) {
 			Long initTime = System.nanoTime();
@@ -106,15 +98,27 @@ public class SchedulerSubSystem {
 		}
 		scheduler.queueDropOff(m.getElevator(), m.getCurrent(), m.getDestination());
 	}
-	
+
 	private void handleTerminateMessage(TerminateMessage m) {
 		String erTimes = Arrays.toString(elevatorRequestTimes.toArray());
 		String faTimes = Arrays.toString(floorArrivalTimes.toArray());
 		String frTimes = Arrays.toString(floorRequestTimes.toArray());
-		System.out.println("Scheduler: Elevator Request Response Times (nano) - "+ erTimes);
-		System.out.println("Scheduler: Floor Arrival Response Times (nano) - "+ faTimes);
-		System.out.println("Scheduler: Floor Request Response Times (nano) - "+ frTimes);
+		System.out.println("Scheduler: Elevator Request Response Times (nano) - " + erTimes);
+		System.out.println("Scheduler: Floor Arrival Response Times (nano) - " + faTimes);
+		System.out.println("Scheduler: Floor Request Response Times (nano) - " + frTimes);
+		System.out.println(
+				"Scheduler: Times to send messages (nano) - " + Arrays.toString(messenger.getMessageTimes().toArray()));
+		System.out
+				.println("Scheduler: Average time to send a message (nano) - " + average(messenger.getMessageTimes()));
 		bExit = true;
+	}
+
+	private long average(List<Long> times) {
+		long sum = 0;
+		for (Long l : times) {
+			sum += l;
+		}
+		return sum / times.size();
 	}
 
 	public void close() {
@@ -142,7 +146,8 @@ public class SchedulerSubSystem {
 		System.out.println("System exiting...");
 		try {
 			Thread.sleep(3000);
-		} catch (InterruptedException e) {}
+		} catch (InterruptedException e) {
+		}
 		System.exit(0);
 	}
 }
