@@ -7,24 +7,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import elevator.Elevator;
-import elevator.ElevatorQueue;
 import elevator.ElevatorShaft;
 import floor.SimulationVars;
 import messages.ElevatorMessage;
 import messages.ElevatorMessage.MessageType;
-import messages.ElevatorRequestMessage;
-import messages.ElevatorRequestMessage.Direction;
 import messages.FloorArrivalMessage;
-import messages.FloorRequestMessage;
 import messages.Message;
 
 public class SchedulerMessenger {
 	private DatagramSocket recvSock, sendSock;
-	private List<Long> mTimes;
+	private List<Long> messageTimes; // list of times in ns to create and send a message
 
 	public SchedulerMessenger() {
-		mTimes = Collections.synchronizedList(new ArrayList<Long>());
+		messageTimes = Collections.synchronizedList(new ArrayList<Long>());
 		try {
 			// Construct a datagram socket and bind it to port 3000
 			// on the local host machine. This socket will be used to
@@ -65,7 +60,7 @@ public class SchedulerMessenger {
 			fm.setDirection(shaft.getQueue().getDirection());
 			sendToFloor(fm);
 		}
-		mTimes.add(System.nanoTime() - start);
+		messageTimes.add(System.nanoTime() - start);
 	}
 
 	public void sendToFloor(FloorArrivalMessage m) {
@@ -87,7 +82,7 @@ public class SchedulerMessenger {
 	}
 
 	public List<Long> getMessageTimes() {
-		return mTimes;
+		return messageTimes;
 	}
 
 	public void close() {

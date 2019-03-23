@@ -22,6 +22,7 @@ public class SchedulerSubSystem {
 	private List<Long> elevatorRequestTimes;
 	private List<Long> floorArrivalTimes;
 	private List<Long> floorRequestTimes;
+	private List<Long> schedulerTimes; // list of times in ns to run scheduler once
 	private boolean bExit = false;
 
 	public SchedulerSubSystem() {
@@ -29,6 +30,7 @@ public class SchedulerSubSystem {
 		floorArrivalTimes = Collections.synchronizedList(new ArrayList<Long>());
 		floorRequestTimes = Collections.synchronizedList(new ArrayList<Long>());
 		threadPool = Executors.newFixedThreadPool(SimulationVars.numberOfElevators);
+		schedulerTimes = Collections.synchronizedList(new ArrayList<Long>());
 
 		messenger = new SchedulerMessenger();
 		scheduler = new Scheduler(messenger);
@@ -110,15 +112,25 @@ public class SchedulerSubSystem {
 				"Scheduler: Times to send messages (nano) - " + Arrays.toString(messenger.getMessageTimes().toArray()));
 		System.out
 				.println("Scheduler: Average time to send a message (nano) - " + average(messenger.getMessageTimes()));
+		List<Long> tmp = Collections.synchronizedList(new ArrayList<Long>());
+		tmp.addAll(elevatorRequestTimes);
+		tmp.addAll(floorArrivalTimes);
+		tmp.addAll(floorRequestTimes);
+		System.out.println("Scheduler: Average time to run scheduler once (nano) - " + average(tmp));
 		bExit = true;
 	}
 
-	private long average(List<Long> times) {
+	private long sum(List<Long> times) {
 		long sum = 0;
 		for (Long l : times) {
 			sum += l;
 		}
-		return sum / times.size();
+		return sum;
+	}
+
+	// this method works... sum times
+	private long average(List<Long> times) {
+		return sum(times) / times.size();
 	}
 
 	public void close() {
