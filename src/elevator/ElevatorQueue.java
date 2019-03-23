@@ -150,4 +150,8 @@ public class ElevatorQueue {
 	public Direction getDirection() {
 		return direction;
 	}
+	
+	public Direction pickUpPeekDirection() {
+		return pickUpQueue.peek().getDirection();
+	}
 }

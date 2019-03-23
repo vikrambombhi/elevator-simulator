@@ -146,7 +146,6 @@ public class Scheduler {
                 System.out.printf("Scheduler: Elevator %d dequeuing floor %d\n", elevatorId, destination);
                 Direction trueDirection = elevatorQueue.directionPeek();
                 elevatorQueue.remove();
-
                 // this is a pick up or drop off.. notify floor
                  FloorArrivalMessage msg = new FloorArrivalMessage(floor, elevatorId, dir);
                
@@ -239,8 +238,9 @@ public class Scheduler {
 
     private void redistributePickupRequests(ElevatorQueue queue) {
         // ignore drop off queues, those people are stuck in the unresponsive elevator
-        Direction dir = queue.getDirection();
+    	Direction dir;
         while (!queue.pickupIsEmpty()) {
+        	dir = queue.pickUpPeekDirection();
             queuePickUp(dir, queue.pickupPop());
         }
     }
