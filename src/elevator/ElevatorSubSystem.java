@@ -84,11 +84,14 @@ public class ElevatorSubSystem implements Runnable {
 	public void handleMessage(Message m) {
 		// State machine switch
 		if (m instanceof ElevatorMessage) {
-			// scheduler tells the elevator to move, stop, open or close.
-			elevator.handleElevatorMessage((ElevatorMessage) m);
+			//if we arent simulating a hard fault
+			if(!hardFaultFlag) {
+				// scheduler tells the elevator to move, stop, open or close.
+				elevator.handleElevatorMessage((ElevatorMessage) m);
 
-			if (elevator.isMoving()) {
-				sendTravelMessage();
+				if (elevator.isMoving()) {
+					sendTravelMessage();
+				}
 			}
 		} else if (m instanceof FloorRequestMessage) {
 			forwardFloorRequest((FloorRequestMessage) m);
@@ -112,10 +115,7 @@ public class ElevatorSubSystem implements Runnable {
 		} else {
 			arrivalSensor = new Thread(new ArrivalSensor(elevator.getId(), elevator.getFloor(), elevator.getFloor()-1));
 		}
-		//if we arent simulating a hard fault
-		if (!hardFaultFlag) {
-			arrivalSensor.start();
-		}
+		arrivalSensor.start();
 	}
 
 	private void forwardFloorRequest(FloorRequestMessage m) {
