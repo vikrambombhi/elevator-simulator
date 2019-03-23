@@ -8,6 +8,7 @@ import messages.ElevatorRequestMessage;
 import messages.FaultMessage;
 import messages.FloorMetaMessage;
 import messages.Message;
+import messages.TerminateMessage;
 
 public class FaultSimulator implements Runnable {
 
@@ -32,16 +33,30 @@ public class FaultSimulator implements Runnable {
 	@Override
 	public void run() {
 		int nextRequest;
-		FaultMessage m;
+		FaultMessage m = null;
+		TerminateMessage t = null;
 		byte[] faultData;
-		DatagramPacket faultPacket;
+		byte[] terminateData;
+		DatagramPacket faultPacket = null;
+		DatagramPacket[] terminatePackets = new DatagramPacket[1 + SimulationVars.numberOfElevators + SimulationVars.numberOfFloors];
 		
 		while ((nextRequest = file.getNextRequestTime(time, faultIndicator)) != -1) {
-			//prep next messages
-			m = file.getFaultMessage(nextRequest);
-			faultData = Message.serialize(m);
-			faultPacket = new DatagramPacket(faultData, faultData.length, SimulationVars.elevatorAddresses[m.getElevator()], SimulationVars.elevatorPorts[m.getElevator()]);
 			
+			if (file.getTerminateMessage(nextRequest) == null) {
+				m = file.getFaultMessage(nextRequest);
+				faultData = Message.serialize(m);
+				faultPacket = new DatagramPacket(faultData, faultData.length, SimulationVars.elevatorAddresses[m.getElevator()], SimulationVars.elevatorPorts[m.getElevator()]);
+			} else {
+				t = file.getTerminateMessage(nextRequest);
+				terminateData = Message.serialize(t);
+				for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
+					terminatePackets[i] = new DatagramPacket(terminateData, terminateData.length, SimulationVars.elevatorAddresses[i], SimulationVars.elevatorPorts[i]);
+				}
+				for (int i = 0; i < SimulationVars.numberOfFloors; i++) {
+					terminatePackets[i+SimulationVars.numberOfElevators] = new DatagramPacket(terminateData, terminateData.length, SimulationVars.floorAddresses[i], SimulationVars.floorPorts[i]);
+				}
+				terminatePackets[SimulationVars.numberOfElevators+SimulationVars.numberOfFloors] = new DatagramPacket(terminateData, terminateData.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
+			}
 			//sleep until 
 			try {
 				Thread.sleep((nextRequest - time)/SimulationVars.timeScalar);
@@ -51,7 +66,13 @@ public class FaultSimulator implements Runnable {
 			time = nextRequest;
 			
 			//send messages
-			Message.send(sendSocket, faultPacket);
+			if (t == null) {
+				Message.send(sendSocket, faultPacket);
+			} else {
+				for (int i = 0; i < terminatePackets.length; i++) {
+					Message.send(sendSocket, terminatePackets[i]);
+				}
+			}
 		}
 	}
 

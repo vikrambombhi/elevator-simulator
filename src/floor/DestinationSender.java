@@ -35,7 +35,7 @@ public class DestinationSender implements Runnable {
 		DatagramPacket sendPacket;
 		byte[] data;
 		FloorMetaMessage f;
-		for (int i = 0; i < passengers.size(); i++) {
+		while(!passengers.isEmpty()) {
 			Integer passenger = passengers.remove(0);
 
 			// send one message to the elevator
@@ -61,7 +61,7 @@ public class DestinationSender implements Runnable {
 
 			// small sleep so things don't get too spicy
 			try {
-				Thread.sleep(500);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				System.exit(1);

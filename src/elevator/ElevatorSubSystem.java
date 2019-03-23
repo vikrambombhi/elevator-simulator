@@ -26,6 +26,8 @@ public class ElevatorSubSystem implements Runnable {
 	private DatagramSocket sendSocket, receiveSocket;
 	
 	private boolean hardFaultFlag = false;
+	
+	private boolean bExit = false;
 
 	public ElevatorSubSystem(int id) {
 		elevator = new Elevator(id);
@@ -48,7 +50,7 @@ public class ElevatorSubSystem implements Runnable {
 		int id = elevator.getId();
 		System.out.printf("ElevatorSubSystem %d: Starting on port %d\n", id, SimulationVars.elevatorPorts[id]);
 		try {
-			while (!Thread.currentThread().isInterrupted()) {
+			while (!Thread.currentThread().isInterrupted() && !bExit) {
 				DatagramPacket receivePacket = Message.receive(receiveSocket);
 				Message m = Message.deserialize(receivePacket.getData());
 				handleMessage(m);
@@ -99,6 +101,8 @@ public class ElevatorSubSystem implements Runnable {
 			} else {
                 elevator.setFault(true);
 			}
+		} else if (m instanceof TerminateMessage) {
+			bExit = true;
 		}
 	}
 

@@ -122,6 +122,31 @@ public class File {
 		return m;
 	}
 	
+	public TerminateMessage getTerminateMessage(int time) {
+		TerminateMessage m;
+		try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] parts = line.split(" ");
+				String timeStamp = parts[0];
+				String faultIndicator = parts[1];
+				String terminate = parts[2];
+				String elevator = parts[3];
+				int msTime = getMS(timeStamp);
+				
+				if (Integer.parseInt(faultIndicator) == -1 && msTime == time) {
+					if (terminate.equals("Terminate")) {
+						m = new TerminateMessage();
+						return m;
+					}	
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	//returns the stringified time stamp t in milliseconds
 	public int getMS(String t) {
 		String[] parts = t.split(":");
