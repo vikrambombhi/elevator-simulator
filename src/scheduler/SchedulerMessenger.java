@@ -43,7 +43,7 @@ public class SchedulerMessenger {
 	public void sendToElevator(int currentFloor, int destination, ElevatorShaft shaft) {
 		ElevatorMessage m = new ElevatorMessage(directElevatorTo(currentFloor, destination));
 		int id = shaft.getElevator().getId();
-		System.out.println("Scheduler: Sending message of type " + m.getMessageType() + "to Elevator " + id);
+		//System.out.println("Scheduler: Sending message of type " + m.getMessageType() + "to Elevator " + id);
 
 		byte[] data = Message.serialize(m);
 		DatagramPacket pack = new DatagramPacket(data, data.length, SimulationVars.elevatorAddresses[id],

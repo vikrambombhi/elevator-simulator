@@ -45,7 +45,7 @@ public class SchedulerSubSystem {
 	}
 
 	public void schedule() {
-		System.out.println("SchedulerSubSystem: Waiting for message");
+		//System.out.println("SchedulerSubSystem: Waiting for message");
 
 		Message m = messenger.receive();
 
