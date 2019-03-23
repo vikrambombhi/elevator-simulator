@@ -9,6 +9,7 @@ import messages.FloorArrivalMessage;
 import messages.FloorMetaMessage;
 import messages.FloorTravelMessage;
 import messages.Message;
+import messages.TerminateMessage;
 import messages.ElevatorRequestMessage.Direction;
 
 import java.util.List;
@@ -21,6 +22,8 @@ public class FloorSubsystem implements Runnable {
 	private Floor floor;
 
 	private int floorNum;
+	
+	private boolean bExit = false;
 
 	private Thread requestSimulator;
 
@@ -72,7 +75,7 @@ public class FloorSubsystem implements Runnable {
 		requestSimulator.start();
 		System.out.println("Floor "+floorNum+": Started");
 
-		while(true) {
+		while(!bExit) {
 			//listen for incoming messages
 			Message m = Message.deserialize(Message.receive(receiveSocket).getData());
 
@@ -87,6 +90,10 @@ public class FloorSubsystem implements Runnable {
 			//if arrived message
 			} else if (m instanceof FloorArrivalMessage) {
 				arrivalMessage((FloorArrivalMessage) m);
+			
+			//if terminate message
+			} else if (m instanceof TerminateMessage) {
+				terminateMessage((TerminateMessage) m);
 			}
 		}
 	}
@@ -149,6 +156,16 @@ public class FloorSubsystem implements Runnable {
 			//modify model
 			floor.setDownLamp(false);
 		}
+	}
+	
+	public void terminateMessage(TerminateMessage m) {
+		int failedPickUps = goingDown.size() + goingUp.size();
+		int failedDropOffs = 0;
+		for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
+			failedDropOffs += ourPassengers[i];
+		}
+		System.out.printf("Floor %d: %d never picked up, %d never arrived.\n", floorNum, failedPickUps, failedDropOffs);
+		bExit = true;
 	}
 
 	public int getFloorNum() {

@@ -5,6 +5,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.concurrent.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import messages.ElevatorRequestMessage.Direction;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
+import messages.TerminateMessage;
 
 public class SchedulerSubSystem {
 	private Scheduler scheduler;
@@ -27,6 +29,7 @@ public class SchedulerSubSystem {
 	private List<Long> elevatorRequestTimes;
 	private List<Long> floorArrivalTimes;
 	private List<Long> floorRequestTimes;
+	private boolean bExit = false;
 
 	public SchedulerSubSystem() {
 		elevatorRequestTimes = Collections.synchronizedList(new ArrayList<Long>());
@@ -53,7 +56,7 @@ public class SchedulerSubSystem {
 				@Override
 				public void run() {
 					handleElevatorRequest((ElevatorRequestMessage) m);
-					elevatorRequestTimes.add(initTime - System.nanoTime());
+					elevatorRequestTimes.add(System.nanoTime() - initTime);
 				}
 			});
 		} else if (m instanceof FloorArrivalMessage) {
@@ -62,7 +65,7 @@ public class SchedulerSubSystem {
 				@Override
 				public void run() {
 					handleFloorArrival((FloorArrivalMessage) m);
-					floorArrivalTimes.add(initTime - System.nanoTime());
+					floorArrivalTimes.add(System.nanoTime() - initTime);
 				}
 			});
 		} else if (m instanceof FloorRequestMessage) {
@@ -71,9 +74,11 @@ public class SchedulerSubSystem {
 				@Override
 				public void run() {
 					handleFloorRequest((FloorRequestMessage) m);
-					floorRequestTimes.add(initTime - System.nanoTime());
+					floorRequestTimes.add(System.nanoTime() - initTime);
 				}
 			});
+		} else if (m instanceof TerminateMessage) {
+			handleTerminateMessage((TerminateMessage) m);
 		}
 	}
 
@@ -101,6 +106,16 @@ public class SchedulerSubSystem {
 		}
 		scheduler.queueDropOff(m.getElevator(), m.getCurrent(), m.getDestination());
 	}
+	
+	private void handleTerminateMessage(TerminateMessage m) {
+		String erTimes = Arrays.toString(elevatorRequestTimes.toArray());
+		String faTimes = Arrays.toString(floorArrivalTimes.toArray());
+		String frTimes = Arrays.toString(floorRequestTimes.toArray());
+		System.out.println("Scheduler: Elevator Request Response Times (nano) - "+ erTimes);
+		System.out.println("Scheduler: Floor Arrival Response Times (nano) - "+ faTimes);
+		System.out.println("Scheduler: Floor Request Response Times (nano) - "+ frTimes);
+		bExit = true;
+	}
 
 	public void close() {
 		faultDetectorThread.interrupt();
@@ -110,9 +125,10 @@ public class SchedulerSubSystem {
 	public void run() {
 		faultDetectorThread.start();
 		try {
-			while (true) {
+			while (!bExit) {
 				schedule();
 			}
+			close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			close();
@@ -123,5 +139,10 @@ public class SchedulerSubSystem {
 		System.out.println("Scheduler: Starting on port 3000");
 		SchedulerSubSystem s = new SchedulerSubSystem();
 		s.run();
+		System.out.println("System exiting...");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {}
+		System.exit(0);
 	}
 }
