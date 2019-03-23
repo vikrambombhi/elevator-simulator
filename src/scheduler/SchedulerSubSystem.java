@@ -105,9 +105,12 @@ public class SchedulerSubSystem {
 		String erTimes = Arrays.toString(elevatorRequestTimes.toArray());
 		String faTimes = Arrays.toString(floorArrivalTimes.toArray());
 		String frTimes = Arrays.toString(floorRequestTimes.toArray());
-		System.out.println("Scheduler: Elevator Request Response Times (nano) - " + erTimes);
-		System.out.println("Scheduler: Floor Arrival Response Times (nano) - " + faTimes);
-		System.out.println("Scheduler: Floor Request Response Times (nano) - " + frTimes);
+		System.out.println("Scheduler: Elevator Request Response Times (nano) Average: " + average(elevatorRequestTimes)
+				+ ", Variance: " + sampleVariance(elevatorRequestTimes) + " - " + erTimes);
+		System.out.println("Scheduler: Floor Arrival Response Times (nano) Average: " + average(floorArrivalTimes)
+				+ ", Variance: " + sampleVariance(floorArrivalTimes) + " - " + faTimes);
+		System.out.println("Scheduler: Floor Request Response Times (nano) Average: " + average(floorRequestTimes)
+				+ ", Variance: " + sampleVariance(floorRequestTimes) + " - " + frTimes);
 		System.out.println(
 				"Scheduler: Times to send messages (nano) - " + Arrays.toString(messenger.getMessageTimes().toArray()));
 		System.out
@@ -131,6 +134,16 @@ public class SchedulerSubSystem {
 	// this method works... sum times
 	private long average(List<Long> times) {
 		return sum(times) / times.size();
+	}
+
+	private double sampleVariance(List<Long> times) {
+		long mean = average(times);
+		long sum = 0;
+		for (Long l : times) {
+			long xi = l - mean;
+			sum += xi * xi;
+		}
+		return sum / (times.size() - 1);
 	}
 
 	public void close() {
