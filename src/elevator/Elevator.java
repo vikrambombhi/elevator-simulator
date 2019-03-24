@@ -89,6 +89,7 @@ public class Elevator {
                 state = State.MOVING_UP;
             } else {
 				this.fault = false;
+				System.out.println("Soft Fault: Doors failed to close.");
             }
 			break;
 
@@ -98,7 +99,8 @@ public class Elevator {
                 motor.move(Motor.Direction.DOWN);
                 state = State.MOVING_DOWN;
             } else {
-                state = State.STOPPED_DOORS_CLOSED;
+            	this.fault = false;
+            	System.out.println("Soft Fault: Doors failed to close.");
             }
 			break;
 		default:
