@@ -13,7 +13,7 @@ Members:
 
 2. Open src/elevator/ElevatorManager.java, click run in eclipse
 
-3. Open src/scheduler/Scheduler.java, click run in eclipse
+3. Open src/scheduler/SchedulerSubSystem.java, click run in eclipse
 
 4. Open src/floor/FloorManager.java, click run in eclipse
 
@@ -40,6 +40,12 @@ The floor subsystem now reads and sends faults to the elevator subsystem.
 The elevator subsystem receives these fault messages and simulates them.
 The scheduler handles soft fault by resending the last message.
 Hard fault are handled by removing the faulty elevator and redistributing the queue.
+
+#### 4.00
+
+Made the scheduler composed of multiple classes.
+Added timing, and statistics about timings of scheduler algorithm & message sending. Stats are printed after a termination message.
+
 
 ## Diagrams
 
