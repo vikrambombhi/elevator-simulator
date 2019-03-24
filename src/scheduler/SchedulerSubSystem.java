@@ -1,21 +1,14 @@
 package scheduler;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.util.concurrent.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import elevator.Elevator;
-import elevator.ElevatorQueue;
 import floor.SimulationVars;
-import messages.ElevatorMessage;
-import messages.ElevatorMessage.MessageType;
 import messages.ElevatorRequestMessage;
-import messages.ElevatorRequestMessage.Direction;
 import messages.FloorArrivalMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
@@ -29,6 +22,7 @@ public class SchedulerSubSystem {
 	private List<Long> elevatorRequestTimes;
 	private List<Long> floorArrivalTimes;
 	private List<Long> floorRequestTimes;
+	private List<Long> schedulerTimes; // list of times in ns to run scheduler once
 	private boolean bExit = false;
 
 	public SchedulerSubSystem() {
@@ -36,6 +30,7 @@ public class SchedulerSubSystem {
 		floorArrivalTimes = Collections.synchronizedList(new ArrayList<Long>());
 		floorRequestTimes = Collections.synchronizedList(new ArrayList<Long>());
 		threadPool = Executors.newFixedThreadPool(SimulationVars.numberOfElevators);
+		schedulerTimes = Collections.synchronizedList(new ArrayList<Long>());
 
 		messenger = new SchedulerMessenger();
 		scheduler = new Scheduler(messenger);
@@ -48,7 +43,6 @@ public class SchedulerSubSystem {
 		//System.out.println("SchedulerSubSystem: Waiting for message");
 
 		Message m = messenger.receive();
-
 
 		if (m instanceof ElevatorRequestMessage) {
 			Long initTime = System.nanoTime();
@@ -106,15 +100,50 @@ public class SchedulerSubSystem {
 		}
 		scheduler.queueDropOff(m.getElevator(), m.getCurrent(), m.getDestination());
 	}
-	
+
 	private void handleTerminateMessage(TerminateMessage m) {
 		String erTimes = Arrays.toString(elevatorRequestTimes.toArray());
 		String faTimes = Arrays.toString(floorArrivalTimes.toArray());
 		String frTimes = Arrays.toString(floorRequestTimes.toArray());
-		System.out.println("Scheduler: Elevator Request Response Times (nano) - "+ erTimes);
-		System.out.println("Scheduler: Floor Arrival Response Times (nano) - "+ faTimes);
-		System.out.println("Scheduler: Floor Request Response Times (nano) - "+ frTimes);
+		System.out.println("Scheduler: Elevator Request Response Times (nano) Average: " + average(elevatorRequestTimes)
+				+ ", Variance: " + sampleVariance(elevatorRequestTimes) + " - " + erTimes);
+		System.out.println("Scheduler: Floor Arrival Response Times (nano) Average: " + average(floorArrivalTimes)
+				+ ", Variance: " + sampleVariance(floorArrivalTimes) + " - " + faTimes);
+		System.out.println("Scheduler: Floor Request Response Times (nano) Average: " + average(floorRequestTimes)
+				+ ", Variance: " + sampleVariance(floorRequestTimes) + " - " + frTimes);
+		System.out.println("Scheduler: Times to send messages (nano) Average: " + average(messenger.getMessageTimes())
+				+ ", Variance: " + sampleVariance(messenger.getMessageTimes()) + " - "
+				+ Arrays.toString(messenger.getMessageTimes().toArray()));
+		List<Long> tmp = Collections.synchronizedList(new ArrayList<Long>());
+		tmp.addAll(elevatorRequestTimes);
+		tmp.addAll(floorArrivalTimes);
+		tmp.addAll(floorRequestTimes);
+		System.out.println("Scheduler: Average time to run scheduler once (nano) Average: " + average(tmp)
+				+ " - Variance: " + sampleVariance(tmp));
 		bExit = true;
+	}
+
+	private long sum(List<Long> times) {
+		long sum = 0;
+		for (Long l : times) {
+			sum += l;
+		}
+		return sum;
+	}
+
+	// this method works... sum times
+	private long average(List<Long> times) {
+		return sum(times) / times.size();
+	}
+
+	private double sampleVariance(List<Long> times) {
+		long mean = average(times);
+		long sum = 0;
+		for (Long l : times) {
+			long xi = l - mean;
+			sum += xi * xi;
+		}
+		return sum / (times.size() - 1);
 	}
 
 	public void close() {
@@ -142,7 +171,8 @@ public class SchedulerSubSystem {
 		System.out.println("System exiting...");
 		try {
 			Thread.sleep(3000);
-		} catch (InterruptedException e) {}
+		} catch (InterruptedException e) {
+		}
 		System.exit(0);
 	}
 }
