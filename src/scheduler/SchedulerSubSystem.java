@@ -111,15 +111,15 @@ public class SchedulerSubSystem {
 				+ ", Variance: " + sampleVariance(floorArrivalTimes) + " - " + faTimes);
 		System.out.println("Scheduler: Floor Request Response Times (nano) Average: " + average(floorRequestTimes)
 				+ ", Variance: " + sampleVariance(floorRequestTimes) + " - " + frTimes);
-		System.out.println(
-				"Scheduler: Times to send messages (nano) - " + Arrays.toString(messenger.getMessageTimes().toArray()));
-		System.out
-				.println("Scheduler: Average time to send a message (nano) - " + average(messenger.getMessageTimes()));
+		System.out.println("Scheduler: Times to send messages (nano) Average: " + average(messenger.getMessageTimes())
+				+ ", Variance: " + sampleVariance(messenger.getMessageTimes()) + " - "
+				+ Arrays.toString(messenger.getMessageTimes().toArray()));
 		List<Long> tmp = Collections.synchronizedList(new ArrayList<Long>());
 		tmp.addAll(elevatorRequestTimes);
 		tmp.addAll(floorArrivalTimes);
 		tmp.addAll(floorRequestTimes);
-		System.out.println("Scheduler: Average time to run scheduler once (nano) - " + average(tmp));
+		System.out.println("Scheduler: Average time to run scheduler once (nano) Average: " + average(tmp)
+				+ " - Variance: " + sampleVariance(tmp));
 		bExit = true;
 	}
 
