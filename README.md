@@ -13,7 +13,7 @@ Members:
 
 2. Open src/elevator/ElevatorManager.java, click run in eclipse
 
-3. Open src/scheduler/Scheduler.java, click run in eclipse
+3. Open src/scheduler/SchedulerSubSystem.java, click run in eclipse
 
 4. Open src/floor/FloorManager.java, click run in eclipse
 
@@ -41,6 +41,12 @@ The elevator subsystem receives these fault messages and simulates them.
 The scheduler handles soft fault by resending the last message.
 Hard fault are handled by removing the faulty elevator and redistributing the queue.
 
+#### 4.00
+
+Made the scheduler composed of multiple classes.
+Added timing, and statistics about timings of scheduler algorithm & message sending. Stats are printed after a termination message.
+
+
 ## Diagrams
 
 The most up to date version of our diagrams can be found at..
@@ -49,6 +55,9 @@ The most up to date version of our diagrams can be found at..
 	src/diagrams/scheduler_uml.pdf
 	src/diagrams/elevator_state.pdf
 	src/diagrams/timing_diagram.pdf
+
+	if you cannot read the pdf diagrams for elevator_uml and scheduler_uml we
+	have included png diagrams which are formatted better
 
 ##### Contributions - Iteration 1
 - Kirin Rastogi: Built the scheduler algorithm.
@@ -62,8 +71,14 @@ The most up to date version of our diagrams can be found at..
 - Jacky Chiu: Refactored elevator for multiple elevators, scheduler contributions, elevator junit
 - Connor Poland: Utilized previous assets to implement input file requests, timing diagram.
 
-##### Contributions - Iteration 2
+##### Contributions - Iteration 3
 - Kirin Rastogi: Scheduler soft faults and tests
 - Vikram Bombhi: Elevator fault simulation and integration
 - Jacky Chiu: Scheduler hard faults and tests
 - Connor Poland: Refactor of queueing system and fault file simulation
+
+##### Contributions - Iteration 4
+- Kirin Rastogi: Scheduler timings & statistics
+- Vikram Bombhi: Scheduler timings & statistics
+- Jacky Chiu: Scheduler refactor
+- Connor Poland: Diagrams & scaling up the amount of elevators
