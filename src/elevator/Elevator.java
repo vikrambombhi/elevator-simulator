@@ -98,7 +98,7 @@ public class Elevator {
                 motor.move(Motor.Direction.DOWN);
                 state = State.MOVING_DOWN;
             } else {
-                state = State.STOPPED_DOORS_CLOSED;
+                this.fault = false;
             }
 			break;
 		default:
