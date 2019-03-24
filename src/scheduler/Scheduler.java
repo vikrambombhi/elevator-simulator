@@ -26,7 +26,7 @@ public class Scheduler {
             // Priority 1: Elevator queues with no work.
             ElevatorShaft shaft = elevatorWithEmptyQueue();
             if (shaft != null) {
-                addPickUpAndSort(shaft, floor);
+                addPickUpAndSort(shaft, floor, direction);
                 int currentFloor = shaft.getElevator().getFloor();
                 messenger.sendToElevator(currentFloor, floor, shaft);
                 shaft.setCurrentDestination(currentFloor);
@@ -37,14 +37,14 @@ public class Scheduler {
             // find elevators going the same direction and can hit
             shaft = elevatorOnPath(direction, floor);
             if (shaft != null) {
-                addPickUpAndSort(shaft, floor);
+                addPickUpAndSort(shaft, floor, direction);
                 return;
             }
 
             // Priority 3: Elevators with the smallest work queue.
             // find smallest queue size
             shaft = elevatorWithSmallestQueue();
-            addPickUpAndSort(shaft, floor);
+            addPickUpAndSort(shaft, floor, direction);
         }
     }
 
@@ -139,15 +139,21 @@ public class Scheduler {
             }
 
             // when an elevator arrives, tell it to go up or down, depending on the queues
-            System.out.printf("Scheduler: Elevator %d arrived at floor %d\n", elevatorId, floor);
+            //System.out.printf("Scheduler: Elevator %d arrived at floor %d\n", elevatorId, floor);
             // tell elevator to go up, down, or stop & open
             int destination = elevatorQueue.peek();
             if (destination == floor) {
                 System.out.printf("Scheduler: Elevator %d dequeuing floor %d\n", elevatorId, destination);
+                Direction trueDirection = elevatorQueue.directionPeek();
                 elevatorQueue.remove();
-
                 // this is a pick up or drop off.. notify floor
-                FloorArrivalMessage msg = new FloorArrivalMessage(floor, elevatorId, dir);
+                 FloorArrivalMessage msg = new FloorArrivalMessage(floor, elevatorId, dir);
+               
+                //if this corresponds to a pick, we can improve the accuracy of the direction 
+                if (trueDirection != null) {
+                	msg.setDirection(trueDirection);
+                } 
+                
                 messenger.sendToFloor(msg);
 
                 if (elevatorQueue.isEmpty()) {
@@ -185,8 +191,8 @@ public class Scheduler {
 
     // addAndSort adds the requested floor to the elevator's queue and sorts to stop
     // on floors on the way.
-    private void addPickUpAndSort(ElevatorShaft e, int floor) {
-        e.getQueue().addPickUp(floor);
+    private void addPickUpAndSort(ElevatorShaft e, int floor, Direction d) {
+        e.getQueue().addPickUp(floor, d);
         queueSort(e);
     }
 
@@ -232,8 +238,9 @@ public class Scheduler {
 
     private void redistributePickupRequests(ElevatorQueue queue) {
         // ignore drop off queues, those people are stuck in the unresponsive elevator
-        Direction dir = queue.getDirection();
+    	Direction dir;
         while (!queue.pickupIsEmpty()) {
+        	dir = queue.pickUpPeekDirection();
             queuePickUp(dir, queue.pickupPop());
         }
     }

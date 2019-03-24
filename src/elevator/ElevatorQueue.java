@@ -7,13 +7,33 @@ import java.util.LinkedList;
 import messages.ElevatorRequestMessage.Direction;
 
 public class ElevatorQueue {
+	
+	public class ElevatorItem {
+		private int floor;
+		private Direction direction;
+		public ElevatorItem(int f, Direction d) {
+			floor = f;
+			direction = d;
+		}
+		public int getFloor() {return floor;}
+		public Direction getDirection() {return direction;}
+		public String toString() {
+			String d;
+			if (Direction.UP == direction) {
+				d = "UP";
+			} else {
+				d = "DOWN";
+			}
+			return floor+"-"+d;
+		}
+	}
 
-	private LinkedList<Integer> pickUpQueue;
+	private LinkedList<ElevatorItem> pickUpQueue;
 	private LinkedList<Integer> dropOffQueue;
 	private Direction direction;
 
 	public ElevatorQueue() {
-		pickUpQueue = new LinkedList<Integer>();
+		pickUpQueue = new LinkedList<ElevatorItem>();
 		dropOffQueue = new LinkedList<Integer>();
         direction = Direction.UP;
 	}
@@ -26,8 +46,8 @@ public class ElevatorQueue {
 		return pickUpQueue.isEmpty();
 	}
 
-	public void addPickUp(Integer i) {
-		pickUpQueue.add(i);
+	public void addPickUp(Integer i, Direction d) {
+		pickUpQueue.add(new ElevatorItem(i, d));
 	}
 
 	public void addDropOff(Integer i) {
@@ -45,13 +65,23 @@ public class ElevatorQueue {
 		if (pickUpQueue.isEmpty()) {
 			return dropOffQueue.peek();
 		} else if (dropOffQueue.isEmpty()) {
-			return pickUpQueue.peek();
+			return pickUpQueue.peek().getFloor();
 		}
 
 		if (direction == Direction.UP) {
-			return Math.min(pickUpQueue.peek(), dropOffQueue.peek());
+			return Math.min(pickUpQueue.peek().getFloor(), dropOffQueue.peek());
 		} else {
-			return Math.max(pickUpQueue.peek(), dropOffQueue.peek());
+			return Math.max(pickUpQueue.peek().getFloor(), dropOffQueue.peek());
+		}
+	}
+	
+	public Direction directionPeek() {
+		if (pickUpQueue.isEmpty()) {
+			return null;
+		} else if (peek() != pickUpPeek()) {
+			return null;
+		} else {
+			return pickUpQueue.peek().getDirection();
 		}
 	}
 
@@ -59,7 +89,7 @@ public class ElevatorQueue {
 		if (pickUpQueue.isEmpty()) {
 			return -1;
 		}
-		return pickUpQueue.peek();
+		return pickUpQueue.peek().getFloor();
 	}
 
 	public int dropOffPeek() {
@@ -83,7 +113,7 @@ public class ElevatorQueue {
 	}
 
 	public Integer pickupPop() {
-		return pickUpQueue.pop();
+		return pickUpQueue.pop().getFloor();
 	}
 
 	public String toString() {
@@ -91,16 +121,21 @@ public class ElevatorQueue {
 	}
 
 	public void sortUp() {
-		Collections.sort(pickUpQueue);
+		Collections.sort(pickUpQueue, new Comparator<ElevatorItem>() {
+			@Override
+			public int compare(ElevatorItem int1, ElevatorItem int2) {
+				return int1.getFloor() - int2.getFloor();
+			}
+		});
 		Collections.sort(dropOffQueue);
 		direction = Direction.UP;
 	}
 
 	public void sortDown() {
-		Collections.sort(pickUpQueue, new Comparator<Integer>() {
+		Collections.sort(pickUpQueue, new Comparator<ElevatorItem>() {
 			@Override
-			public int compare(Integer int1, Integer int2) {
-				return int2 - int1;
+			public int compare(ElevatorItem int1, ElevatorItem int2) {
+				return int2.getFloor() - int1.getFloor();
 			}
 		});
 		Collections.sort(dropOffQueue, new Comparator<Integer>() {
@@ -114,5 +149,9 @@ public class ElevatorQueue {
 
 	public Direction getDirection() {
 		return direction;
+	}
+	
+	public Direction pickUpPeekDirection() {
+		return pickUpQueue.peek().getDirection();
 	}
 }
