@@ -56,6 +56,9 @@ The most up to date version of our diagrams can be found at..
 	src/diagrams/elevator_state.pdf
 	src/diagrams/timing_diagram.pdf
 
+	if you cannot read the pdf diagrams for elevator_uml and scheduler_uml we
+	have included png diagrams which are formatted better
+
 ##### Contributions - Iteration 1
 - Kirin Rastogi: Built the scheduler algorithm.
 - Vikram Bombhi: Basic structure and communication.
