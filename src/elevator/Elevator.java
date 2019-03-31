@@ -19,7 +19,10 @@ public class Elevator {
 	private int id;
 	private int floor;
 	private State state;
-	private boolean fault = false;
+	//pending fault holds that a soft fault will happen in the future
+	//active fault becomes true when pending fault is true and a soft fault can be simulated (stopped doors open)
+	private boolean pendingFault = false;
+	private boolean activeFault = false;
 
 	// Simulates the physical components attached to the elevator.
 	private Motor motor;
@@ -58,7 +61,8 @@ public class Elevator {
 	}
 
 	public void setFault(boolean fault) {
-		this.fault = fault;
+		this.pendingFault = fault;
+		System.out.println("fault pending");
 	}
 
 	/*
@@ -66,41 +70,48 @@ public class Elevator {
 	 * components.
 	 */
 	public void handleElevatorMessage(ElevatorMessage m) {
-		System.out.println("Elevator: Handling message of type " + m.getMessageType());
+		//System.out.println("Elevator: Handling message of type " + m.getMessageType());
 		switch (m.getMessageType()) {
 		case STOP:
 			assert (state == State.MOVING_UP || state == State.MOVING_DOWN);
 			motor.stop();
             door.open();
 			state = State.STOPPED_DOORS_OPENED;
-            System.out.println(this);
 
             // Delay open/close door
             try { Thread.sleep(100); } catch (InterruptedException e) { }
 
             door.close();
 			state = State.STOPPED_DOORS_CLOSED;
+			
+			//entered possible fault state
+			if(pendingFault) {
+				activeFault = true;
+				pendingFault = false;
+				System.out.println("fault set");
+			}
+			
 			break;
 
 		case GOUP:
-            if (this.fault == false) {
+            if (this.activeFault == false) {
                 assert (state == State.STOPPED_DOORS_CLOSED);
                 motor.move(Motor.Direction.UP);
                 state = State.MOVING_UP;
             } else {
-				this.fault = false;
-				System.out.println("Soft Fault: Doors failed to close.");
+				activeFault = false;
+				System.out.println("fault cleared");
             }
 			break;
 
 		case GODOWN:
-            if (this.fault == false) {
+            if (this.activeFault == false) {
                 assert (state == State.STOPPED_DOORS_CLOSED);
                 motor.move(Motor.Direction.DOWN);
                 state = State.MOVING_DOWN;
             } else {
-            	this.fault = false;
-            	System.out.println("Soft Fault: Doors failed to close.");
+            	activeFault = false;
+				System.out.println("fault cleared");
             }
 			break;
 		default:
@@ -108,7 +119,7 @@ public class Elevator {
 			System.exit(1);
 		}
 
-		System.out.println(this);
+		//System.out.println(this);
 	}
 
 	public String toString() {

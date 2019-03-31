@@ -30,35 +30,36 @@ public class ElevatorQueue {
 
 	private LinkedList<ElevatorItem> pickUpQueue;
 	private LinkedList<Integer> dropOffQueue;
-	private Direction direction;
+	private int elevatorPosition;
+	private boolean hardFaulted = false;
 
 	public ElevatorQueue() {
 		pickUpQueue = new LinkedList<ElevatorItem>();
 		dropOffQueue = new LinkedList<Integer>();
-        direction = Direction.UP;
+        elevatorPosition = 0;
 	}
 
-	public boolean isEmpty() {
+	public synchronized boolean isEmpty() {
 		return (pickUpQueue.isEmpty() && dropOffQueue.isEmpty());
 	}
 
-	public boolean pickupIsEmpty() {
+	public synchronized boolean pickupIsEmpty() {
 		return pickUpQueue.isEmpty();
 	}
 
-	public void addPickUp(Integer i, Direction d) {
+	public synchronized void addPickUp(Integer i, Direction d) {
 		pickUpQueue.add(new ElevatorItem(i, d));
 	}
 
-	public void addDropOff(Integer i) {
+	public synchronized void addDropOff(Integer i) {
 		dropOffQueue.add(i);
 	}
 
-	public int size() {
+	public synchronized int size() {
 		return pickUpQueue.size() + dropOffQueue.size();
 	}
 
-	public int peek() {
+	public synchronized int peek() {
 		if (isEmpty()) {
 			return -1;
 		}
@@ -67,15 +68,16 @@ public class ElevatorQueue {
 		} else if (dropOffQueue.isEmpty()) {
 			return pickUpQueue.peek().getFloor();
 		}
-
-		if (direction == Direction.UP) {
-			return Math.min(pickUpQueue.peek().getFloor(), dropOffQueue.peek());
+		int pickUpDistance = Math.abs(pickUpQueue.peek().getFloor() - elevatorPosition);
+		int dropOffDistance = Math.abs(dropOffQueue.peek() - elevatorPosition);
+		if (pickUpDistance >= dropOffDistance) {
+			return dropOffQueue.peek();
 		} else {
-			return Math.max(pickUpQueue.peek().getFloor(), dropOffQueue.peek());
+			return pickUpQueue.peek().getFloor();
 		}
 	}
 	
-	public Direction directionPeek() {
+	public synchronized Direction directionPeek() {
 		if (pickUpQueue.isEmpty()) {
 			return null;
 		} else if (peek() != pickUpPeek()) {
@@ -85,42 +87,42 @@ public class ElevatorQueue {
 		}
 	}
 
-	public int pickUpPeek() {
+	public synchronized int pickUpPeek() {
 		if (pickUpQueue.isEmpty()) {
 			return -1;
 		}
 		return pickUpQueue.peek().getFloor();
 	}
 
-	public int dropOffPeek() {
+	public synchronized int dropOffPeek() {
 		if (dropOffQueue.isEmpty()) {
 			return -1;
 		}
 		return dropOffQueue.peek();
 	}
 
-	public Integer remove() {
+	public synchronized void remove() {
 		int peek = peek();
-		if (peek != -1) {
-			while (peek == pickUpPeek()) {
-				pickUpQueue.remove();
+		while (peek == peek()) {
+			if((!pickUpQueue.isEmpty()) && pickUpQueue.peek().getFloor() == peek) {
+				pickUpQueue.pop();
 			}
-			while (peek == dropOffPeek()) {
-				dropOffQueue.remove();
+			if((!dropOffQueue.isEmpty()) && dropOffQueue.peek() == peek) {
+				dropOffQueue.pop();
 			}
 		}
-		return peek;
 	}
 
-	public Integer pickupPop() {
+	public synchronized Integer pickupPop() {
 		return pickUpQueue.pop().getFloor();
+		
 	}
 
-	public String toString() {
-		return " pick-ups: "+pickUpQueue.toString()+ " drop-offs: "+dropOffQueue.toString();
+	public synchronized String toString() {
+		return " at floor: "+elevatorPosition+" pick-ups: "+pickUpQueue.toString()+ " drop-offs: "+dropOffQueue.toString();
 	}
 
-	public void sortUp() {
+	public synchronized void sortUp() {
 		Collections.sort(pickUpQueue, new Comparator<ElevatorItem>() {
 			@Override
 			public int compare(ElevatorItem int1, ElevatorItem int2) {
@@ -128,10 +130,10 @@ public class ElevatorQueue {
 			}
 		});
 		Collections.sort(dropOffQueue);
-		direction = Direction.UP;
+		//direction = Direction.UP;
 	}
 
-	public void sortDown() {
+	public synchronized void sortDown() {
 		Collections.sort(pickUpQueue, new Comparator<ElevatorItem>() {
 			@Override
 			public int compare(ElevatorItem int1, ElevatorItem int2) {
@@ -144,14 +146,111 @@ public class ElevatorQueue {
 				return int2 - int1;
 			}
 		});
-		direction = Direction.DOWN;
+		//direction = Direction.DOWN;
 	}
 
-	public Direction getDirection() {
-		return direction;
+	public synchronized Direction getDirection() {
+		return null;
 	}
 	
-	public Direction pickUpPeekDirection() {
-		return pickUpQueue.peek().getDirection();
+	public synchronized Direction pickUpPeekDirection() {
+		if (peek() == pickUpQueue.peek().getFloor()) {
+			return pickUpQueue.peek().getDirection();
+		}
+		return null;
+	}
+	
+	public synchronized boolean contains(int f) {
+		for (int i = 0; i < pickUpQueue.size(); i++) {
+			if (pickUpQueue.get(i).getFloor() == f) {
+				return true;
+			}
+		}
+		for (int i = 0; i < dropOffQueue.size(); i++) {
+			if (dropOffQueue.get(i) == f) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public synchronized boolean onRoute(int f) {
+		ElevatorItem tempUp = new ElevatorItem(f, Direction.UP);
+		ElevatorItem tempDown = new ElevatorItem(f, Direction.DOWN);
+		if (dropOffQueue.contains(f) || pickUpQueue.contains(tempUp) || pickUpQueue.contains(tempDown)) {
+			return true;
+		}
+		int lowest = -1;
+		int highest = -1;
+		for (int i = 0; i < pickUpQueue.size(); i++) {
+			int temp = pickUpQueue.get(i).getFloor();
+			if (lowest > temp || lowest == -1) {
+				lowest = temp;
+			}
+			if (highest < temp || highest == -1) {
+				highest = temp;
+			}
+		}
+		for (int i = 0; i < dropOffQueue.size(); i++) {
+			int temp = dropOffQueue.get(i);
+			if (lowest > temp || lowest == -1) {
+				lowest = temp;
+			}
+			if (highest < temp || highest == -1) {
+				highest = temp;
+			}
+		}
+		if (lowest <= f && highest >= f) {
+			return true;
+		}
+		return false;
+	}
+	
+	public synchronized int floorsAway(int f) {
+		int floorsAway = -1;
+		for (int i = 0; i < pickUpQueue.size(); i++) {
+			int temp = pickUpQueue.get(i).getFloor();
+			if (floorsAway > temp || floorsAway == -1) {
+				floorsAway = temp;
+			}
+		}
+		for (int i = 0; i < dropOffQueue.size(); i++) {
+			int temp = dropOffQueue.get(i);
+			if (floorsAway > temp || floorsAway == -1) {
+				floorsAway = temp;
+			}
+		}
+		return floorsAway;
+	}
+	
+	public synchronized void rebalance() {
+		Collections.sort(pickUpQueue, new Comparator<ElevatorItem>() {
+			@Override
+			public int compare(ElevatorItem int1, ElevatorItem int2) {
+				return Math.abs(int1.getFloor() - elevatorPosition) - Math.abs(int2.getFloor() - elevatorPosition);
+			}
+		});
+		Collections.sort(dropOffQueue, new Comparator<Integer>() {
+			@Override
+			public int compare(Integer int1, Integer int2) {
+				return Math.abs(int1 - elevatorPosition) - Math.abs(int2 - elevatorPosition);
+			}
+		});
+	}
+	
+	public int getElevatorPosition() {
+		return elevatorPosition;
+	}
+	
+	public void setElevatorPosition(int i) {
+		elevatorPosition = i;
+	}
+	
+	public void setHardFaulted(boolean b) {
+		hardFaulted = b;
+	}
+	
+	public boolean getHardFaulted() {
+		return hardFaulted;
 	}
 }

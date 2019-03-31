@@ -8,7 +8,6 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import messages.*;
-import scheduler.Scheduler;
 import floor.ArrivalSensor;
 import floor.SimulationVars;
 import messages.ElevatorRequestMessage.Direction;
