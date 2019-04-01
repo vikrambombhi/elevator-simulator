@@ -1,22 +1,28 @@
 package floor;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-public  class SimulationVars {
+public class SimulationVars {
+	public static String nonLocalAddress = "192.168.0.??";
+	public static boolean schedulerIsLocal = true;
+	public static boolean floorIsLocal = true;
+	public static boolean elevatorIsLocal = true;
+	
 	public static int numberOfElevators = 4;
 	public static int numberOfFloors = 22;
 
-	public static int timeScalar = 10;
+	public static int timeScalar = 2;
 	public static int elevatorTravelTime = 5000/timeScalar;
 
-	public static InetAddress elevatorSystemAddress = InetAddress.getLoopbackAddress();
+	public static InetAddress elevatorSystemAddress = getAddress("Elevator");
 	public static InetAddress[] elevatorAddresses = {elevatorSystemAddress, elevatorSystemAddress, elevatorSystemAddress, elevatorSystemAddress};
 	public static int[] elevatorPorts = {4000, 4001, 4002, 4003};
 	
-	public static InetAddress schedulerAddress = InetAddress.getLoopbackAddress();
+	public static InetAddress schedulerAddress = getAddress("Scheduler");
 	public static int schedulerPort = 3000;
 	
-	public static InetAddress floorSystemAddress = InetAddress.getLoopbackAddress();
+	public static InetAddress floorSystemAddress = getAddress("Floor");
 	public static InetAddress[] floorAddresses = 
 		{
 			floorSystemAddress, floorSystemAddress,floorSystemAddress, floorSystemAddress, floorSystemAddress,
@@ -31,4 +37,25 @@ public  class SimulationVars {
 	
 	public static String inputFile = "src/input.txt";
 	public static String outputFile = "src/output.txt";
+	
+	public static InetAddress getAddress(String s) {
+		if (s.equals("Scheduler")){
+			if (schedulerIsLocal) {
+				return InetAddress.getLoopbackAddress();
+			} else {
+				try {
+					return InetAddress.getByName(nonLocalAddress);
+				} catch (UnknownHostException e) {}
+			}
+		} else {
+			if (elevatorIsLocal) {
+				return InetAddress.getLoopbackAddress();
+			} else {
+				try {
+					return InetAddress.getByName(nonLocalAddress);
+				} catch (UnknownHostException e) {}
+			}
+		}
+		return null;
+	}
 }
