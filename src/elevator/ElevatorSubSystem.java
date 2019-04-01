@@ -33,9 +33,7 @@ public class ElevatorSubSystem implements Runnable {
 		elevator = new Elevator(id);
 		try {
 			sendSocket = new DatagramSocket();
-			receiveSocket = new DatagramSocket(null);
-			receiveSocket.setReuseAddress(true);
-			receiveSocket.bind(new InetSocketAddress(SimulationVars.elevatorPorts[id]));
+			receiveSocket = new DatagramSocket(SimulationVars.elevatorPorts[id]);
 		} catch (SocketException se) {
 			se.printStackTrace();
 			System.exit(1);
@@ -49,17 +47,11 @@ public class ElevatorSubSystem implements Runnable {
 	public void run() {
 		int id = elevator.getId();
 		System.out.printf("ElevatorSubSystem %d: Starting on port %d\n", id, SimulationVars.elevatorPorts[id]);
-		try {
-			while (!Thread.currentThread().isInterrupted() && !bExit) {
+		while (!bExit) {
 				Message m = Message.deserialize(Message.receive(receiveSocket).getData());
 				handleMessage(m);
-			}
-		} catch (Exception e) {
-			System.out.println("ElevatorSubSystem quiting.");
-			e.printStackTrace();
-		} finally {
-			close();
 		}
+		close();
 	}
 
 	/*
