@@ -28,7 +28,7 @@ public class QueueCleaner implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
-			for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
+			for (int i = 0; i < queues.length; i++) {
 				try {
 					synchronized(queues[i]) {
 						queues[i].wait((long)(SimulationVars.elevatorTravelTime*2));

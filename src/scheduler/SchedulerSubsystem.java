@@ -14,14 +14,14 @@ import messages.Message;
 import messages.TerminateMessage;
 import messages.ElevatorRequestMessage.Direction;
 
-public class SchedSubsystem {
+public class SchedulerSubsystem {
 	
 	private DatagramSocket recvSock;
 	private Thread[] elevatorSchedulers;
 	private ElevatorQueue[] elevatorQueues;
 	private boolean bExit = false;
 	
-	public SchedSubsystem(Thread[] eS, ElevatorQueue[] eQ) {
+	public SchedulerSubsystem(Thread[] eS, ElevatorQueue[] eQ) {
 		elevatorSchedulers = eS;
 		elevatorQueues = eQ;
 		for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
@@ -125,7 +125,7 @@ public class SchedSubsystem {
 		Thread[] schedulers = new Thread[SimulationVars.numberOfElevators];
 		for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
 			queues[i] = new ElevatorQueue();
-			schedulers[i] = new Thread(new ElevatorScheduler(i ,queues[i]));
+			schedulers[i] = new Thread(new Scheduler(i ,queues[i]));
 		}
 		for (int i = 0; i < SimulationVars.numberOfElevators; i++) {
 			schedulers[i].start();
@@ -135,11 +135,9 @@ public class SchedSubsystem {
 		queueCleaner.start();
 		
 		System.out.println("Scheduler: Starting on port " + SimulationVars.schedulerPort);
-		SchedSubsystem schedSubsystem = (new SchedSubsystem(schedulers, queues));
+		SchedulerSubsystem schedulerSubsystem = (new SchedulerSubsystem(schedulers, queues));
 
-		schedSubsystem.run();
-		
-
+		schedulerSubsystem.run();
 		
 		System.out.println("System exiting...");
 		try {

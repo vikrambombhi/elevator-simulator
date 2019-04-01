@@ -12,14 +12,14 @@ import messages.ElevatorRequestMessage.Direction;
 import messages.FloorArrivalMessage;
 import messages.Message;
 
-public class ElevatorScheduler implements Runnable {
+public class Scheduler implements Runnable {
 	
 	private int id;
 	private ElevatorQueue elevatorQueue;
 	private DatagramSocket sendSocket;
 	private boolean faultSuspected = false;
 	
-	public ElevatorScheduler(int i, ElevatorQueue e) {
+	public Scheduler(int i, ElevatorQueue e) {
 		id = i;
 		elevatorQueue = e;
 		try {
@@ -51,10 +51,10 @@ public class ElevatorScheduler implements Runnable {
 					break;
 				} else {
 					faultSuspected = true;
-					System.out.println("Elevator "+id+": Possible fault suspected");
+					System.out.println("Scheduler "+id+": Possible fault suspected");
 				}
 			} else if (faultSuspected) {
-				System.out.println("Elevator "+id+": Soft fault confirmed and resolved");
+				System.out.println("Scheduler "+id+": Soft fault confirmed and resolved");
 				faultSuspected = false;
 			}
 			
