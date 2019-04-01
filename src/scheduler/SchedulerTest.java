@@ -36,7 +36,7 @@ public class SchedulerTest extends TestCase {
 
         //wait for the scheduler to deem a fault and the cleaner to  notice the fault empty the pickups 
         try {
-        	Thread.sleep(5000);
+        	Thread.sleep(60000/SimulationVars.timeScalar);
         } catch (InterruptedException e) {}
 		
         //fault should be set on queue

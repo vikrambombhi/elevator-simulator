@@ -31,7 +31,7 @@ public class QueueCleaner implements Runnable {
 			for (int i = 0; i < queues.length; i++) {
 				try {
 					synchronized(queues[i]) {
-						queues[i].wait((long)(SimulationVars.elevatorTravelTime*2));
+						queues[i].wait((long)(SimulationVars.elevatorTravelTime));
 					}
 				} catch (InterruptedException e) {}
 				if (queues[i].getHardFaulted()) {
