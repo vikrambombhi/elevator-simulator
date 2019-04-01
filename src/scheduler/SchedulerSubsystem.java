@@ -1,5 +1,6 @@
 package scheduler;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
@@ -36,16 +37,21 @@ public class SchedulerSubsystem {
 	}
 	
 	public void schedule() {
-		Message m = Message.deserialize(Message.receive(recvSock).getData());
+		DatagramPacket pack = Message.receive(recvSock);
+		DatagramPacket echo = new DatagramPacket(pack.getData(), pack.getData().length, pack.getAddress(), pack.getPort());
+		Message m = Message.deserialize(pack.getData());
 		
 		if (m instanceof ElevatorRequestMessage) {
 			handleElevatorRequest((ElevatorRequestMessage) m);
+			Message.send(recvSock, echo);
 			
 		} else if (m instanceof FloorArrivalMessage) {
 			handleFloorArrival((FloorArrivalMessage) m);
+			Message.send(recvSock, echo);
 			
 		} else if (m instanceof FloorRequestMessage) {
 			handleFloorRequest((FloorRequestMessage) m);
+			Message.send(recvSock, echo);
 			
 		} else if (m instanceof TerminateMessage) {
 			handleTerminate((TerminateMessage) m);
@@ -91,8 +97,10 @@ public class SchedulerSubsystem {
 		synchronized(elevatorQueues[elevator]) {
 			elevatorQueues[elevator].addDropOff(m.getDestination());
 			elevatorQueues[elevator].rebalance();
-			elevatorQueues[elevator].notifyAll();
-			System.out.println("Elevator "+elevator+":"+elevatorQueues[elevator].toString());
+			if (elevatorQueues[elevator].allPassengersIn()) {
+				elevatorQueues[elevator].notifyAll();
+				System.out.println("Elevator "+elevator+":"+elevatorQueues[elevator].toString());
+			}
 		}
 	}
 	

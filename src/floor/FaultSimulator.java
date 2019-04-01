@@ -38,7 +38,7 @@ public class FaultSimulator implements Runnable {
 		byte[] faultData;
 		byte[] terminateData;
 		DatagramPacket faultPacket = null;
-		DatagramPacket[] terminatePackets = new DatagramPacket[1 + SimulationVars.numberOfElevators + SimulationVars.numberOfFloors];
+		DatagramPacket[] terminatePackets = new DatagramPacket[2 + SimulationVars.numberOfElevators + SimulationVars.numberOfFloors];
 		
 		while ((nextRequest = file.getNextRequestTime(time, faultIndicator)) != -1) {
 			
@@ -56,6 +56,7 @@ public class FaultSimulator implements Runnable {
 					terminatePackets[i+SimulationVars.numberOfElevators] = new DatagramPacket(terminateData, terminateData.length, SimulationVars.floorAddresses[i], SimulationVars.floorPorts[i]);
 				}
 				terminatePackets[SimulationVars.numberOfElevators+SimulationVars.numberOfFloors] = new DatagramPacket(terminateData, terminateData.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
+				terminatePackets[SimulationVars.numberOfElevators+SimulationVars.numberOfFloors+1] = new DatagramPacket(terminateData, terminateData.length, SimulationVars.floorSystemAddress, SimulationVars.timerPort);
 			}
 			//sleep until 
 			try {

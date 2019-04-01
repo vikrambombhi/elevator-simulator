@@ -4,6 +4,7 @@ public class FloorManager {
 
 	private static Thread floorSubsystems[];
 	private static Thread faultSimulator;
+	private static Thread responseTimer;
 
 	public FloorManager() {
 
@@ -12,6 +13,8 @@ public class FloorManager {
 	public static void main(String args[]) {
 		faultSimulator = new Thread(new FaultSimulator());
 		faultSimulator.start();
+		responseTimer = new Thread(new ResponseTimer());
+		responseTimer.start();
 		floorSubsystems = new Thread[SimulationVars.numberOfFloors];
 
 		for (int i = 0; i < SimulationVars.numberOfFloors; i++) {

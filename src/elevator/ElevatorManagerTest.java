@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 import messages.*;
+import messages.ElevatorMessage.MessageType;
 import floor.SimulationVars;
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +31,8 @@ public class ElevatorManagerTest extends TestCase {
 	public void testElevatorCreation() {
 		ElevatorManager manager = new ElevatorManager(3);
 		assertEquals(3, manager.getElevatorSubsystems().length);
+		
+		manager.close();
 	}
 
 	@Test
@@ -42,17 +45,26 @@ public class ElevatorManagerTest extends TestCase {
 		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, subsystem.getElevator().getState());
 
 		// Test GOUP
-		subsystem.handleMessage(new ElevatorMessage(messages.ElevatorMessage.MessageType.GOUP));
+		
+		ElevatorMessage m = new ElevatorMessage();
+		m.setMessageType(MessageType.GOUP);
+		subsystem.handleMessage(m);
 		assertEquals(Elevator.State.MOVING_UP, subsystem.getElevator().getState());
 
 		// Test STOP
-		subsystem.handleMessage(new ElevatorMessage(messages.ElevatorMessage.MessageType.STOP));
+		m = new ElevatorMessage();
+		m.setMessageType(MessageType.STOP);
+		subsystem.handleMessage(m);
 		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, subsystem.getElevator().getState());
 		subsystem.getElevator().setFloor(1);
 
 		// Test GODOWN
-		subsystem.handleMessage(new ElevatorMessage(messages.ElevatorMessage.MessageType.GODOWN));
+		m = new ElevatorMessage();
+		m.setMessageType(MessageType.GODOWN);
+		subsystem.handleMessage(m);
 		assertEquals(Elevator.State.MOVING_DOWN, subsystem.getElevator().getState());
+		
+		manager.close();
 	}
 
 	@Test

@@ -32,6 +32,8 @@ public class ElevatorQueue {
 	private LinkedList<Integer> dropOffQueue;
 	private int elevatorPosition;
 	private boolean hardFaulted = false;
+	private int passengersIn = 0;
+	private int passengersWaiting = 0;
 
 	public ElevatorQueue() {
 		pickUpQueue = new LinkedList<ElevatorItem>();
@@ -52,6 +54,7 @@ public class ElevatorQueue {
 	}
 
 	public synchronized void addDropOff(Integer i) {
+		passengersIn++;
 		dropOffQueue.add(i);
 	}
 
@@ -106,6 +109,7 @@ public class ElevatorQueue {
 		while (peek == peek()) {
 			if((!pickUpQueue.isEmpty()) && pickUpQueue.peek().getFloor() == peek) {
 				pickUpQueue.pop();
+				passengersWaiting++;
 			}
 			if((!dropOffQueue.isEmpty()) && dropOffQueue.peek() == peek) {
 				dropOffQueue.pop();
@@ -243,6 +247,8 @@ public class ElevatorQueue {
 	}
 	
 	public void setElevatorPosition(int i) {
+		passengersIn = 0;
+		passengersWaiting = 0;
 		elevatorPosition = i;
 	}
 	
@@ -252,5 +258,9 @@ public class ElevatorQueue {
 	
 	public boolean getHardFaulted() {
 		return hardFaulted;
+	}
+	
+	public boolean allPassengersIn() {
+		return passengersIn == passengersWaiting;
 	}
 }

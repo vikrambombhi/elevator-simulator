@@ -8,6 +8,8 @@ import java.util.List;
 import messages.FloorMetaMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
+import messages.ResponseTimeMessage;
+import messages.ResponseTimeMessage.Subsystem;
 
 public class DestinationSender implements Runnable {
 
@@ -35,9 +37,8 @@ public class DestinationSender implements Runnable {
 		DatagramPacket sendPacket;
 		byte[] data;
 		FloorMetaMessage f;
-		while(!passengers.isEmpty()) {
-			Integer passenger = passengers.remove(0);
-
+		for (int i = 0; i < passengers.size(); i++) {
+			Integer passenger = passengers.get(i);
 			// send one message to the elevator
 			FloorRequestMessage m = new FloorRequestMessage();
 			m.setCurrent(currentFloor);
@@ -57,14 +58,14 @@ public class DestinationSender implements Runnable {
 
 			sendPacket = new DatagramPacket(data, data.length, SimulationVars.floorAddresses[passenger],
 					SimulationVars.floorPorts[passenger]);
+			
+			Long initTime = System.nanoTime();
 			Message.send(sendSocket, sendPacket);
-
-			// small sleep so things don't get too spicy
+			
 			try {
-				Thread.sleep(10);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
-				System.exit(1);
+				
 			}
 		}
 	}

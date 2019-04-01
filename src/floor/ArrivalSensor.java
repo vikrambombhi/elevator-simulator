@@ -7,6 +7,8 @@ import java.net.SocketException;
 import messages.FloorArrivalMessage;
 import messages.ElevatorRequestMessage.Direction;
 import messages.Message;
+import messages.ResponseTimeMessage;
+import messages.ResponseTimeMessage.Subsystem;
 
 public class ArrivalSensor implements Runnable{
 	
@@ -54,6 +56,18 @@ public class ArrivalSensor implements Runnable{
 		Message.send(sendSocket, sendPacket);
 		//tell the scheduler the elevator made it
 		sendPacket = new DatagramPacket(data, data.length, SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
+		Long initTime = System.nanoTime();
 		Message.send(sendSocket, sendPacket);
+		//wait for echo
+		Message.receive(sendSocket);
+		Long elapsedTime = System.nanoTime() - initTime;
+		//report response time
+		ResponseTimeMessage r = new ResponseTimeMessage();
+		r.setSubsystem(Subsystem.ArrivalSensor);
+		r.setTime(elapsedTime);
+		data = Message.serialize(r);
+		DatagramPacket pack = new DatagramPacket(data, data.length, SimulationVars.floorSystemAddress, SimulationVars.timerPort);
+		Message.send(sendSocket, pack);
+		
 	}
 }

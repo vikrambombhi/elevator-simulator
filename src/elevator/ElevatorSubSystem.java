@@ -11,6 +11,7 @@ import messages.*;
 import floor.ArrivalSensor;
 import floor.SimulationVars;
 import messages.ElevatorRequestMessage.Direction;
+import messages.ResponseTimeMessage.Subsystem;
 
 /*
  * ElevatorSubSystem is the subsystem placed in each elevator.
@@ -50,8 +51,7 @@ public class ElevatorSubSystem implements Runnable {
 		System.out.printf("ElevatorSubSystem %d: Starting on port %d\n", id, SimulationVars.elevatorPorts[id]);
 		try {
 			while (!Thread.currentThread().isInterrupted() && !bExit) {
-				DatagramPacket receivePacket = Message.receive(receiveSocket);
-				Message m = Message.deserialize(receivePacket.getData());
+				Message m = Message.deserialize(Message.receive(receiveSocket).getData());
 				handleMessage(m);
 			}
 		} catch (Exception e) {
@@ -117,10 +117,21 @@ public class ElevatorSubSystem implements Runnable {
 		}
 	}
 
-	private void forwardFloorRequest(FloorRequestMessage m) {
+	private void forwardFloorRequest(Message m) {
 		byte[] data = Message.serialize(m);
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
 				SimulationVars.schedulerAddress, SimulationVars.schedulerPort);
+		long initTime = System.nanoTime();
 		Message.send(sendSocket, sendPacket);
+		//wait for echo
+		Message.receive(sendSocket);
+		long elapsedTime = System.nanoTime() - initTime;
+		//report response time
+		ResponseTimeMessage r = new ResponseTimeMessage();
+		r.setSubsystem(Subsystem.DestinationSender);
+		r.setTime(elapsedTime);
+		data = Message.serialize(r);
+		DatagramPacket pack = new DatagramPacket(data, data.length, SimulationVars.floorSystemAddress, SimulationVars.timerPort);
+		Message.send(sendSocket, pack);
 	}
 }
