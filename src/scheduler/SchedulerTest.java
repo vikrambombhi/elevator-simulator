@@ -4,84 +4,84 @@ import org.junit.Test;
 
 import elevator.Elevator;
 import elevator.Elevator.State;
+import floor.SimulationVars;
 import elevator.ElevatorQueue;
+import elevator.ElevatorSubSystem;
 import junit.framework.TestCase;
+import messages.ElevatorMessage;
 import messages.ElevatorRequestMessage;
 import messages.ElevatorRequestMessage.Direction;
+import messages.FaultMessage;
+import messages.ElevatorMessage.MessageType;
 
 public class SchedulerTest extends TestCase {
 	@Test
 	public void testHandleUnresponsiveElevators() {
-		SchedulerMessenger m = new SchedulerMessenger();
-		Scheduler s = new Scheduler(m);
-        FaultDetector detector = new FaultDetector(s, m);
+		//set up test
+		ElevatorQueue queue = new ElevatorQueue();
+		ElevatorQueue[] qs = new ElevatorQueue[1];
+		qs[0] = queue;
+        Thread c = new Thread(new QueueCleaner(qs));
+		Thread s = new Thread(new Scheduler(0, queue));
+        
+        //add some test pickups for A
+        queue.addPickUp(1, Direction.UP);
+        queue.addPickUp(6, Direction.DOWN);
+        queue.addPickUp(10, Direction.DOWN);
+		
+		assertTrue(queue.contains(1) && queue.contains(6) && queue.contains(10));
+		
+        c.start();
+        s.start();
 
-		s.queuePickUp(Direction.UP, 3);
-
-		ElevatorQueue q = s.getElevatorShaft(0).getQueue();
-		ElevatorQueue q1 = s.getElevatorShaft(1).getQueue();
-		ElevatorQueue q2 = s.getElevatorShaft(2).getQueue();
-
-		assertEquals(3, q.peek());
-
-		// hard fault on elevator 0
-		long now = System.currentTimeMillis();
-		// ensures it's at least 10 seconds in the past
-		s.getElevatorShaft(0).setLastResponse(now - 11 * 1000);
-		s.getElevatorShaft(1).setLastResponse(now + 5 * 1000);
-		s.getElevatorShaft(2).setLastResponse(now + 5 * 1000);
-
-		// simulate the elevator moving to be considered a hard fault
-		Elevator e = new Elevator(0);
-		e.setState(Elevator.State.MOVING_UP);
-		s.getElevatorShaft(0).setElevator(e);
-
-		detector.handleUnresponsiveElevators();
-
-		// elevator 0's queue should be removed
-		assertEquals(null, s.getElevatorShaft(0));
-
-		// it's queue should be redistribute to another queue
-		assertEquals(3, q1.peek());
-		assertEquals(true, q2.isEmpty());
-
-		// new requests shouldn't be assigned to the dead elevator
-		s.queuePickUp(Direction.UP, 5);
-		assertEquals(s.getElevatorShaft(0), null);
-		assertEquals(3, q1.peek());
-		assertEquals(5, q2.peek());
-
-		m.close();
+        //wait for the scheduler to deem a fault and the cleaner to  notice the fault empty the pickups 
+        try {
+        	Thread.sleep(60000/SimulationVars.timeScalar);
+        } catch (InterruptedException e) {}
+		
+        //fault should be set on queue
+        assertTrue(queue.getHardFaulted());
+		//the queued pickups should be removed
+		assertTrue(!queue.contains(1) && !queue.contains(6) && !queue.contains(10));
 	}
 
 	@Test
 	public void testHandleUnresponsiveElevatorsSoft() {
-		SchedulerMessenger m = new SchedulerMessenger();
-		Scheduler s = new Scheduler(m);
-        FaultDetector detector = new FaultDetector(s, m);
-
-		s.queuePickUp(Direction.UP, 3);
-		ElevatorQueue q = s.getElevatorShaft(0).getQueue();
-		assertEquals(3, q.peek());
-
-		// soft fault on elevator 0
-		long now = System.currentTimeMillis();
-		// ensures it's at least 10 seconds in the past
-		s.getElevatorShaft(0).setLastResponse(now - 11 * 1000);
-		s.getElevatorShaft(1).setLastResponse(now + 5 * 1000);
-		s.getElevatorShaft(2).setLastResponse(now + 5 * 1000);
-
-		// simulate the elevator stopped to be considered a soft fault
-		Elevator e = new Elevator(0);
-		e.setState(State.STOPPED_DOORS_CLOSED);
-		s.getElevatorShaft(0).setElevator(e);
-
-		// a soft fault is detected
-		assert (detector.handleUnresponsiveElevators() == 2);
-
-		// elevator 0's queue should NOT be removed
-		assert (s.getElevatorShaft(0) != null);
-
-		m.close();
+		ElevatorQueue queue = new ElevatorQueue();
+		ElevatorSubSystem elevator = new ElevatorSubSystem(0);
+		Thread elevatorThread;
+		Thread scheduler = new Thread(new Scheduler(0, queue));
+		
+		//scheduler starts
+		scheduler.start();
+		
+		//simulated trip added
+		synchronized(queue) {
+			queue.addPickUp(5, Direction.UP);
+			queue.notifyAll();
+		}
+		
+		//scheduler will send an instruction 
+        try {
+        	Thread.sleep((long) (SimulationVars.elevatorTravelTime*2.5));
+        } catch (InterruptedException e) {}
+		
+        //simulate the first instruction being ignored
+		synchronized(queue) {
+			queue.notifyAll();
+		}
+		
+		//scheduler will send another instruction 
+        try {
+        	Thread.sleep(SimulationVars.elevatorTravelTime);
+        } catch (InterruptedException e) {}
+		
+        //simulate instruction successfully carried out - soft fault recovered
+		synchronized(queue) {
+			queue.setElevatorPosition(1);
+			queue.notifyAll();
+		}
+		
+		assertTrue(!queue.getHardFaulted());
 	}
 }

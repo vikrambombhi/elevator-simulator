@@ -9,8 +9,10 @@ import java.net.SocketException;
 
 import messages.ElevatorRequestMessage;
 import messages.ElevatorRequestMessage.Direction;
+import messages.ResponseTimeMessage.Subsystem;
 import messages.FloorMetaMessage;
 import messages.Message;
+import messages.ResponseTimeMessage;
 
 public class RequestSimulator implements Runnable{
 
@@ -62,7 +64,19 @@ public class RequestSimulator implements Runnable{
 			
 			//send messages
 			Message.send(sendSocket, floorPacket);
+			
+			Long initTime = System.nanoTime();
 			Message.send(sendSocket, schedulerPacket);
+			//wait for echo 
+			Message.receive(sendSocket);
+			Long elapsedTime = System.nanoTime() - initTime;
+			//report response time
+			ResponseTimeMessage r = new ResponseTimeMessage();
+			r.setSubsystem(Subsystem.RequestSimulator);
+			r.setTime(elapsedTime);
+			byte[] data = Message.serialize(r);
+			DatagramPacket pack = new DatagramPacket(data, data.length, SimulationVars.floorSystemAddress, SimulationVars.timerPort);
+			Message.send(sendSocket, pack);
 		}
 	}
 }
