@@ -97,15 +97,21 @@ public class Elevator {
             door.open();
 			state = State.STOPPED_DOORS_OPENED;
 
-            //moving door closing to when the elevator wants to start moving again
-			//this better models the 'doors stuck open' fault
+			
+
+			//if there are no passengers left, we can close the door
+			//just so its not sitting there idle with an open door
+			if (pressedButtons.isEmpty()) {
+				door.close();
+    			state = State.STOPPED_DOORS_CLOSED;
+			}
 			
 			//entered possible fault state
-			if(pendingFault) {
+			if(pendingFault && state == State.STOPPED_DOORS_OPENED) {
 				activeFault = true;
 				pendingFault = false;
 				System.out.println("fault set");
-			}	
+			}
 			break;
 
 		case GOUP:
