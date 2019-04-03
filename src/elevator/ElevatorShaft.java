@@ -12,7 +12,7 @@ public class ElevatorShaft {
 
 	public ElevatorShaft(int id) {
 		queue = new ElevatorQueue();
-		elevator = new Elevator(id);
+		elevator = new Elevator(id, null);
 		lastResponse = System.currentTimeMillis();
 	}
 

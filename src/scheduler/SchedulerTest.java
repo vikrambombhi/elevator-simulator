@@ -48,7 +48,7 @@ public class SchedulerTest extends TestCase {
 	@Test
 	public void testHandleUnresponsiveElevatorsSoft() {
 		ElevatorQueue queue = new ElevatorQueue();
-		ElevatorSubSystem elevator = new ElevatorSubSystem(0);
+		ElevatorSubSystem elevator = new ElevatorSubSystem(0, null);
 		Thread elevatorThread;
 		Thread scheduler = new Thread(new Scheduler(0, queue));
 		

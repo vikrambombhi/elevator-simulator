@@ -12,6 +12,7 @@ import floor.ArrivalSensor;
 import floor.SimulationVars;
 import messages.ElevatorRequestMessage.Direction;
 import messages.ResponseTimeMessage.Subsystem;
+import ui.Controller;
 
 /*
  * ElevatorSubSystem is the subsystem placed in each elevator.
@@ -29,8 +30,8 @@ public class ElevatorSubSystem implements Runnable {
 	
 	private boolean bExit = false;
 
-	public ElevatorSubSystem(int id) {
-		elevator = new Elevator(id);
+	public ElevatorSubSystem(int id, Controller controller) {
+		elevator = new Elevator(id, controller);
 		try {
 			sendSocket = new DatagramSocket();
 			receiveSocket = new DatagramSocket(SimulationVars.elevatorPorts[id]);
@@ -89,8 +90,9 @@ public class ElevatorSubSystem implements Runnable {
 		} else if (m instanceof FaultMessage) {
 			if (((FaultMessage) m).getHardFault()) {
 				hardFaultFlag = true;
+				elevator.setHardFault(true);
 			} else {
-                elevator.setFault(true);
+                elevator.setSoftFault(true);
 			}
 		} else if (m instanceof TerminateMessage) {
 			bExit = true;
@@ -109,7 +111,8 @@ public class ElevatorSubSystem implements Runnable {
 		}
 	}
 
-	private void forwardFloorRequest(Message m) {
+	private void forwardFloorRequest(FloorRequestMessage m) {
+		elevator.buttonPressed(m.getDestination());
 		byte[] data = Message.serialize(m);
 		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
 				SimulationVars.schedulerAddress, SimulationVars.schedulerPort);

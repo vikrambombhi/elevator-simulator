@@ -10,12 +10,15 @@ import messages.FloorMetaMessage;
 import messages.FloorTravelMessage;
 import messages.Message;
 import messages.TerminateMessage;
+import ui.Controller;
 import messages.ElevatorRequestMessage.Direction;
 
 import java.util.List;
 import java.util.Stack;
 
 public class FloorSubsystem implements Runnable {
+	
+	Controller controller;
 
 	DatagramSocket receiveSocket;
 
@@ -40,7 +43,9 @@ public class FloorSubsystem implements Runnable {
 	//list of passengers going up - we store their destination
 	private List<Integer> goingDown;
 
-	public FloorSubsystem(int num) {
+	public FloorSubsystem(int num, Controller c) {
+		
+		controller = c;
 
 		floorNum = num;
 
@@ -74,6 +79,11 @@ public class FloorSubsystem implements Runnable {
 	public void run() {
 		requestSimulator.start();
 		System.out.println("Floor "+floorNum+": Started");
+		
+		//give the ui a starting state
+		if (controller != null) {
+			controller.updateFloor(this);
+		}
 
 		while(!bExit) {
 			//listen for incoming messages
@@ -94,6 +104,11 @@ public class FloorSubsystem implements Runnable {
 			//if terminate message
 			} else if (m instanceof TerminateMessage) {
 				terminateMessage((TerminateMessage) m);
+			}
+			
+			//update UI after every message
+			if (controller != null) {
+				controller.updateFloor(this);
 			}
 		}
 	}
