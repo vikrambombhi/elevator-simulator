@@ -52,7 +52,7 @@ public class ElevatorManagerTest extends TestCase {
 
 		// Test STOP
 		subsystem.handleMessage(new ElevatorMessage(messages.ElevatorMessage.MessageType.STOP));
-		assertEquals(Elevator.State.STOPPED_DOORS_OPENED, subsystem.getElevator().getState());
+		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, subsystem.getElevator().getState());
 		subsystem.getElevator().setFloor(1);
 
 		// Test GODOWN
