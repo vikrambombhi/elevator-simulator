@@ -5,7 +5,7 @@ import floor.SimulationVars;
 public class View {
 	private String[][] elevators;
 	private String[][] floors;
-	
+
 	public View() {
 		elevators = new String[SimulationVars.numberOfElevators][];
 		floors = new String [SimulationVars.numberOfFloors][];
@@ -16,7 +16,7 @@ public class View {
 			floors[f] = new String[3];
 		}
 	}
-	
+
 	//parsedElevator = {
 		//"elevatorID",
 		//"elevatorState",
@@ -30,18 +30,18 @@ public class View {
 		String currentFloor = elevator[2];
 		String destinationList = elevator[3];
 		String faultState = elevator[4];
-		
+
 		String[] elevatorToUpdate = elevators[Integer.parseInt(elevatorID)];
-		
+
 		setElevatorState(elevatorToUpdate, elevatorState);
 		setCurrentFloor(elevatorToUpdate, currentFloor);
 		setDestinationList(elevatorToUpdate, destinationList);
 		setFaultState(elevatorToUpdate, faultState);
-		
+
 		//post to UI
 		//System.out.println(elevator[0] + " " + elevator[1] + " " + elevator[2] + " " + elevator[3] + " " + elevator[4]);
 	}
-	
+
 	//parsedFloor = {
 		//"floorNumber",
 		//"numberOfUpPassengers",
@@ -53,17 +53,17 @@ public class View {
 		String numberOfUpPassengers = floor[1];
 		String numberOfDownPassengers = floor[2];
 		String directionLampState = floor[3];
-		
+
 		String[] floorToUpdate = floors[Integer.parseInt(floorNumber)];
-		
+
 		setNumberOfUpPassengers(floorToUpdate, numberOfUpPassengers);
 		setNumberOfDownPassengers(floorToUpdate, numberOfDownPassengers);
 		setDirectionLampState(floorToUpdate, directionLampState);
-		
+
 		//post to UI
 		//System.out.println(floor[0] + " " + floor[1] + " " + floor[2] + " " + floor[3]);
 	}
-	
+
 	//helpers
 	public void setElevatorState(String[] elevatorToUpdate, String elevatorState) {
 		elevatorToUpdate[0] = elevatorState;
@@ -86,7 +86,7 @@ public class View {
 	public void setDirectionLampState(String[] floorToUpdate, String directionLampState){
 		floorToUpdate[2] = directionLampState;
 	}
-	
+
 	public String getElevatorState(String[] elevator) {
 		return elevator[0];
 	}
