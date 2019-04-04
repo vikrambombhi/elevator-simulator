@@ -2,14 +2,14 @@ package ui;
 
 import elevator.Elevator;
 import floor.SimulationVars;
-import java.awt.GridLayout;
+import java.awt.*;
 import javax.swing.*;
 
 public class ElevatorsView extends JPanel {
 	private ElevatorView[] elevatorViews;
 
     ElevatorsView() {
-		GridLayout grid = new GridLayout(1, SimulationVars.numberOfElevators);
+		GridLayout grid = new GridLayout(SimulationVars.numberOfElevators, 1);
 		this.setLayout(grid);
 
 		elevatorViews = new ElevatorView[SimulationVars.numberOfElevators];
