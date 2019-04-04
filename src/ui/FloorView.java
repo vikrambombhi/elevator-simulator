@@ -30,7 +30,7 @@ public class FloorView extends JPanel {
 
     public void render(FloorSubsystem f) {
         floor.setText("Floor: " + f.getFloorNum());
-        numberOfDownPassengers.setText("Up Req #: " + f.getUpRequests().size());
+        numberOfUpPassengers.setText("Up Req #: " + f.getUpRequests().size());
         numberOfDownPassengers.setText("Down Req #: " + f.getDownRequests().size());
         renderLamps(f);
     }
