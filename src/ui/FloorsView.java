@@ -22,7 +22,7 @@ public class FloorsView extends JPanel {
 	}
 
 	public void render(FloorSubsystem f) {
-		int index = f.getFloorNum();
+		int index = (SimulationVars.numberOfFloors - 1) - f.getFloorNum(); // keep highest floor at the top.
 		floorViews[index].render(f);
 	}
 }
