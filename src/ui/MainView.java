@@ -11,12 +11,11 @@ public class MainView extends JFrame {
 
 		elevatorsView = new ElevatorsView();
 		this.add(elevatorsView);
-
 	}
 
 	private void initGUI() {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setSize(600, 600);
+		this.setSize(300, 600);
 	}
 
 	public void display() {

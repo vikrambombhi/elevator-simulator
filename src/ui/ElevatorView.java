@@ -13,9 +13,9 @@ public class ElevatorView extends JPanel {
 		GridLayout grid = new GridLayout(3, 1);
 		this.setLayout(grid);
 		this.setBorder(BorderFactory.createLineBorder(Color.black));
+		this.setMaximumSize(new Dimension(100, 100));
 
 		id = new JLabel();
-		id.setMaximumSize(new Dimension(10, 10));
 		this.add(id);
 
 		floor = new JLabel();
