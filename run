@@ -5,4 +5,4 @@ trap 'kill $(jobs -p)' EXIT
 cd build || return
 
 java scheduler.SchedulerSubsystem &
-java ui.Model
+java ui.Controller
