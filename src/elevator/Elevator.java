@@ -96,18 +96,9 @@ public class Elevator {
 			motor.stop();
             door.open();
 			state = State.STOPPED_DOORS_OPENED;
-
-			
-
-			//if there are no passengers left, we can close the door
-			//just so its not sitting there idle with an open door
-			if (pressedButtons.isEmpty()) {
-				door.close();
-    			state = State.STOPPED_DOORS_CLOSED;
-			}
 			
 			//entered possible fault state
-			if(pendingFault && state == State.STOPPED_DOORS_OPENED) {
+			if(pendingFault && !activeFault) {
 				activeFault = true;
 				pendingFault = false;
 				System.out.println("fault set");
@@ -115,6 +106,10 @@ public class Elevator {
 			break;
 
 		case GOUP:
+			if (this.activeFault && pendingFault) {
+				activeFault = false;
+				pendingFault = false;
+			}
             if (this.activeFault == false) {
             	//close doors if they're open
             	if (state == State.STOPPED_DOORS_OPENED) {
@@ -125,12 +120,16 @@ public class Elevator {
                 motor.move(Motor.Direction.UP);
                 state = State.MOVING_UP;
             } else {
-				activeFault = false;
+				pendingFault = true;
 				System.out.println("fault cleared");
             }
 			break;
 
 		case GODOWN:
+			if (this.activeFault && pendingFault) {
+				activeFault = false;
+				pendingFault = false;
+			}
             if (this.activeFault == false) {
             	//close doors if they're open
             	if (state == State.STOPPED_DOORS_OPENED) {
@@ -141,7 +140,7 @@ public class Elevator {
                 motor.move(Motor.Direction.DOWN);
                 state = State.MOVING_DOWN;
             } else {
-            	activeFault = false;
+				pendingFault = true;
 				System.out.println("fault cleared");
             }
 			break;

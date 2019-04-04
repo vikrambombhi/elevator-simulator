@@ -151,7 +151,7 @@ public class FloorSubsystem implements Runnable {
 		if((!goingUp.isEmpty()) && (direction == Direction.UP)) {
 			System.out.printf("Floor %d: %d passenger(s) going UP stepped into elevator %d\n", floorNum, goingUp.size(), arrivingElevator);
 			//simulate the passenger pressing their destination
-			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingUp));
+			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingUp, this));
 			destinationSenders[m.getElevator()].start();
 			goingUp = new Stack<Integer>();
 
@@ -164,7 +164,7 @@ public class FloorSubsystem implements Runnable {
 			System.out.printf("Floor %d: %d passenger(s) going DOWN stepped into elevator %d\n", floorNum, goingDown.size(), arrivingElevator);
 
 			//simulate the passenger pressing their destination
-			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingDown));
+			destinationSenders[m.getElevator()] = new Thread(new DestinationSender(floorNum, m.getElevator(), goingDown, this));
 			destinationSenders[m.getElevator()].start();
 			goingDown = new Stack<Integer>();
 

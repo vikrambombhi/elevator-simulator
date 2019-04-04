@@ -5,6 +5,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.List;
 
+import floor.Floor.directionLampState;
 import messages.FloorMetaMessage;
 import messages.FloorRequestMessage;
 import messages.Message;
@@ -16,13 +17,15 @@ public class DestinationSender implements Runnable {
 	private int elevator;
 	private int currentFloor;
 	private List<Integer> passengers;
+	private FloorSubsystem floorToUpdate;
 
 	private DatagramSocket sendSocket;
 
-	public DestinationSender(int c, int e, List<Integer> p) {
+	public DestinationSender(int c, int e, List<Integer> p, FloorSubsystem f) {
 		elevator = e;
 		passengers = p;
 		currentFloor = c;
+		floorToUpdate = f;
 
 		try {
 			sendSocket = new DatagramSocket();
@@ -63,10 +66,12 @@ public class DestinationSender implements Runnable {
 			Message.send(sendSocket, sendPacket);
 			
 			try {
-				Thread.sleep(100);
+				Thread.sleep(1000/SimulationVars.timeScalar);
 			} catch (InterruptedException e) {
 				
 			}
 		}
+		floorToUpdate.getFloor().setDirectionLamp(elevator, directionLampState.IDLE);
+		floorToUpdate.controller.updateFloor(floorToUpdate);
 	}
 }
