@@ -31,7 +31,7 @@ public class Controller {
 	}
 
 	public void updateFloor(FloorSubsystem floor) {
-        //view.renderFloor(floor);
+        view.getFloorsView().render(floor);
 	}
 
 	public static void main(String[] args) {
