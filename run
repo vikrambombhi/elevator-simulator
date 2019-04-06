@@ -5,5 +5,5 @@ trap 'kill $(jobs -p)' EXIT
 cd build || return
 
 java elevator.ElevatorManager &
-java scheduler.SchedulerSubSystem &
+java scheduler.SchedulerSubsystem &
 java floor.FloorManager
