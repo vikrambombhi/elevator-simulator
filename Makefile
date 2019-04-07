@@ -19,10 +19,10 @@ clean:
 	rm -r build/**/*.class
 
 elevator: build
-	java -cp build/ elevator.ElevatorManager
+	java -cp build/ ui.Controller
 
 scheduler: build
 	java -cp build/ scheduler.SchedulerSubSystem
 
 floor: build
-	java -cp build/ floor.FloorManager
+	java -cp build/ ui.Controller
