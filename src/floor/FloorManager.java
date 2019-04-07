@@ -1,42 +1,26 @@
 package floor;
 
-public class FloorManager {
+import ui.Controller;
+
+public class FloorManager implements Runnable {
 
 	private static Thread floorSubsystems[];
 	private static Thread faultSimulator;
 	private static Thread responseTimer;
 
-	public FloorManager() {
-
-	}
-
-	public static void main(String args[]) {
-		faultSimulator = new Thread(new FaultSimulator());
-		faultSimulator.start();
-		responseTimer = new Thread(new ResponseTimer());
-		responseTimer.start();
+	public FloorManager(Controller controller) {
 		floorSubsystems = new Thread[SimulationVars.numberOfFloors];
-
+		faultSimulator = new Thread(new FaultSimulator());
+		responseTimer = new Thread(new ResponseTimer());
 		for (int i = 0; i < SimulationVars.numberOfFloors; i++) {
-			boolean isBot = false;
-			boolean isTop = false;
-
-			if (i == 0) {
-				isBot = true;
-			}
-			if (i == SimulationVars.numberOfFloors - 1) {
-				isTop = true;
-			}
-
-			floorSubsystems[i] = new Thread(new FloorSubsystem(i));
-			floorSubsystems[i].start();
+			floorSubsystems[i] = new Thread(new FloorSubsystem(i, controller));
 		}
-
-		for (Thread t : floorSubsystems) {
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-			}
-		}
+	}
+	
+	@Override
+	public void run() {
+		faultSimulator.start();
+		responseTimer.start();
+		for (int i = 0; i < SimulationVars.numberOfFloors; i++) { floorSubsystems[i].start();}
 	}
 }

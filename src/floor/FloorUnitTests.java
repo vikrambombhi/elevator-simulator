@@ -17,7 +17,7 @@ public class FloorUnitTests extends TestCase {
 
 		//try each combination of bools on the constructor
 		for (int i = 0; i < SimulationVars.numberOfFloors; i++) {
-			floors[i] = new FloorSubsystem(i);
+			floors[i] = new FloorSubsystem(i, null);
 		}
 
 		Floor tempFloor;
@@ -53,7 +53,7 @@ public class FloorUnitTests extends TestCase {
 
 	public void testRequestMessage() {
 
-		FloorSubsystem floorSubsys = new FloorSubsystem(1);
+		FloorSubsystem floorSubsys = new FloorSubsystem(1, null);
 
 		//create a basic request message - as RequestSimulator would
 		FloorMetaMessage m = new FloorMetaMessage(true);
@@ -78,7 +78,7 @@ public class FloorUnitTests extends TestCase {
 
 	public void testMetaMessage() {
 
-		FloorSubsystem floorSubsys = new FloorSubsystem(2);
+		FloorSubsystem floorSubsys = new FloorSubsystem(2, null);
 
 		//create a basic request message - as a floorSubsystem would
 		FloorMetaMessage m = new FloorMetaMessage(false);
@@ -102,7 +102,7 @@ public class FloorUnitTests extends TestCase {
 	public void testArrivalMessage() {
 		//This scenario is more complex and involves the previous messages having already been sent...
 
-		FloorSubsystem floorSubsys = new FloorSubsystem(1);
+		FloorSubsystem floorSubsys = new FloorSubsystem(1, null);
 
 		//first simulate a passenger we expect to get off on our floor in the arriving elevator
 		//this is done as in testMetaMessage...

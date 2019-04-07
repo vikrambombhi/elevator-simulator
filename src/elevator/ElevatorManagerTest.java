@@ -29,7 +29,7 @@ public class ElevatorManagerTest extends TestCase {
 
 	@Test
 	public void testElevatorCreation() {
-		ElevatorManager manager = new ElevatorManager(3);
+		ElevatorManager manager = new ElevatorManager(3, null);
 		assertEquals(3, manager.getElevatorSubsystems().length);
 		
 		for(int i = 0; i < 3; i++){
@@ -39,7 +39,7 @@ public class ElevatorManagerTest extends TestCase {
 
 	@Test
 	public void testElevatorMessageStateMachine() {
-		ElevatorManager manager = new ElevatorManager(1);
+		ElevatorManager manager = new ElevatorManager(1, null);
 		ElevatorSubSystem subsystem = manager.getElevatorSubsystems()[0];
 
 		// Start off stopped and closed
@@ -52,7 +52,7 @@ public class ElevatorManagerTest extends TestCase {
 
 		// Test STOP
 		subsystem.handleMessage(new ElevatorMessage(messages.ElevatorMessage.MessageType.STOP));
-		assertEquals(Elevator.State.STOPPED_DOORS_CLOSED, subsystem.getElevator().getState());
+		assertEquals(Elevator.State.STOPPED_DOORS_OPENED, subsystem.getElevator().getState());
 		subsystem.getElevator().setFloor(1);
 
 		// Test GODOWN
@@ -64,7 +64,7 @@ public class ElevatorManagerTest extends TestCase {
 
 	@Test
 	public void testElevatorMessageIsIndependent() {
-		ElevatorManager manager = new ElevatorManager(3);
+		ElevatorManager manager = new ElevatorManager(3, null);
 		Thread t = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -117,16 +117,13 @@ public class ElevatorManagerTest extends TestCase {
 
 	@Test
 	public void testFloorArrivalMessage() {
-		ElevatorManager manager = new ElevatorManager(3);
-		Thread t = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				manager.run();
-			}
-		});
+		ElevatorManager manager = new ElevatorManager(3, null);
+		ElevatorSubSystem[] elevatorSubSystems = manager.getElevatorSubsystems();
+		
+		Thread t = new Thread(manager);
 		t.start();
 
-		ElevatorSubSystem[] elevatorSubSystems = manager.getElevatorSubsystems();
+
 
 		FloorArrivalMessage fm = new FloorArrivalMessage();
 		fm.setDirection(messages.ElevatorRequestMessage.Direction.UP);

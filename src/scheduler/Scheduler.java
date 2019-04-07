@@ -46,7 +46,7 @@ public class Scheduler implements Runnable {
 				//and it wasn't where we expected last time as well
 				if(faultSuspected) {
 					//hard fault
-					System.out.println("Elevator "+id+": Hard fault confirmed, awaiting pick up redistrobution");
+					System.out.println("Scheduler "+id+": Hard fault confirmed, awaiting pick up redistrobution");
 					elevatorQueue.setHardFaulted(true);
 					break;
 				} else {

@@ -4,12 +4,18 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.HashSet;
+import java.util.Set;
+
 import messages.*;
+import ui.Controller;
 
 /*
  * Elevator is the subsystem placed in each elevator.
  */
 public class Elevator {
+	
+	Controller controller;
 
 	// State is the possible states that the elevator can be in.
 	public enum State {
@@ -23,17 +29,25 @@ public class Elevator {
 	//active fault becomes true when pending fault is true and a soft fault can be simulated (stopped doors open)
 	private boolean pendingFault = false;
 	private boolean activeFault = false;
+	private boolean hardFault = false;
+	
+	private Set<Integer> pressedButtons = new HashSet<Integer>();
 
 	// Simulates the physical components attached to the elevator.
 	private Motor motor;
 	private Door door;
 
-	public Elevator(int id) {
+	public Elevator(int id, Controller c) {
+		controller = c;
 		this.id = id;
 		floor = 0;
 		state = State.STOPPED_DOORS_CLOSED;
 		motor = new Motor();
 		door = new Door();
+		
+		if (controller != null) {
+			controller.updateElevator(this);
+		}
 	}
 
 	public int getId() {
@@ -46,6 +60,7 @@ public class Elevator {
 
 	public void setFloor(int floor) {
 		this.floor = floor;
+		pressedButtons.remove(floor);
 	}
 
 	public State getState() {
@@ -60,9 +75,13 @@ public class Elevator {
 		return state == State.MOVING_UP || state == State.MOVING_DOWN;
 	}
 
-	public void setFault(boolean fault) {
+	public void setSoftFault(boolean fault) {
 		this.pendingFault = fault;
 		System.out.println("fault pending");
+	}
+	
+	public void setHardFault(boolean fault) {
+		hardFault = fault;
 	}
 
 	/*
@@ -77,40 +96,51 @@ public class Elevator {
 			motor.stop();
             door.open();
 			state = State.STOPPED_DOORS_OPENED;
-
-            // Delay open/close door
-            try { Thread.sleep(100); } catch (InterruptedException e) { }
-
-            door.close();
-			state = State.STOPPED_DOORS_CLOSED;
 			
 			//entered possible fault state
-			if(pendingFault) {
+			if(pendingFault && !activeFault) {
 				activeFault = true;
 				pendingFault = false;
 				System.out.println("fault set");
 			}
-			
 			break;
 
 		case GOUP:
+			if (this.activeFault && pendingFault) {
+				activeFault = false;
+				pendingFault = false;
+			}
             if (this.activeFault == false) {
+            	//close doors if they're open
+            	if (state == State.STOPPED_DOORS_OPENED) {
+                    door.close();
+        			state = State.STOPPED_DOORS_CLOSED;
+            	}
                 assert (state == State.STOPPED_DOORS_CLOSED);
                 motor.move(Motor.Direction.UP);
                 state = State.MOVING_UP;
             } else {
-				activeFault = false;
+				pendingFault = true;
 				System.out.println("fault cleared");
             }
 			break;
 
 		case GODOWN:
+			if (this.activeFault && pendingFault) {
+				activeFault = false;
+				pendingFault = false;
+			}
             if (this.activeFault == false) {
+            	//close doors if they're open
+            	if (state == State.STOPPED_DOORS_OPENED) {
+                    door.close();
+        			state = State.STOPPED_DOORS_CLOSED;
+            	}
                 assert (state == State.STOPPED_DOORS_CLOSED);
                 motor.move(Motor.Direction.DOWN);
                 state = State.MOVING_DOWN;
             } else {
-            	activeFault = false;
+				pendingFault = true;
 				System.out.println("fault cleared");
             }
 			break;
@@ -118,8 +148,25 @@ public class Elevator {
 			System.out.println("Elevator: ElevatorMessage type case not handled: " + m.getMessageType());
 			System.exit(1);
 		}
-
-		//System.out.println(this);
+		if (controller != null) {
+			controller.updateElevator(this);
+		}
+	}
+	
+	public boolean getSoftFault() {
+		return activeFault;
+	}
+	
+	public boolean getHardFault() {
+		return hardFault;
+	}
+	
+	public void buttonPressed(int i) {
+		pressedButtons.add(i);
+	}
+	
+	public Set getButtons() {
+		return pressedButtons;
 	}
 
 	public String toString() {

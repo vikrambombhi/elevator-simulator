@@ -1,25 +1,27 @@
 package elevator;
 
 import floor.SimulationVars;
+import ui.Controller;
 
-public class ElevatorManager {
+public class ElevatorManager implements Runnable{
 
 	private ElevatorSubSystem[] elevatorSubSystems;
 	private Thread[] elevatorThreads;
 
-	ElevatorManager(int numberOfElevators) {
+	public ElevatorManager(int numberOfElevators, Controller controller) {
 		elevatorSubSystems = new ElevatorSubSystem[numberOfElevators];
 		for (int i = 0; i < elevatorSubSystems.length; i++) {
-			elevatorSubSystems[i] = new ElevatorSubSystem(i);
+			elevatorSubSystems[i] = new ElevatorSubSystem(i, controller);
 		}
+		elevatorThreads = new Thread[numberOfElevators];
 	}
 
 	public ElevatorSubSystem[] getElevatorSubsystems() {
 		return elevatorSubSystems;
 	}
 
+	@Override
 	public void run() {
-		elevatorThreads = new Thread[elevatorSubSystems.length];
 		for (int i = 0; i < elevatorSubSystems.length; i++) {
 			Thread t = new Thread(elevatorSubSystems[i]);
 			t.start();
@@ -37,10 +39,5 @@ public class ElevatorManager {
 		for (int i = 0; i < elevatorSubSystems.length; i++) {
 			elevatorThreads[i].interrupt();
 		}
-	}
-
-	public static void main(String args[]) {
-		ElevatorManager em = new ElevatorManager(SimulationVars.numberOfElevators);
-		em.run();
 	}
 }
