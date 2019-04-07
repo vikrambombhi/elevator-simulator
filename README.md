@@ -46,6 +46,20 @@ Hard fault are handled by removing the faulty elevator and redistributing the qu
 Made the scheduler composed of multiple classes.
 Added timing, and statistics about timings of scheduler algorithm & message sending. Stats are printed after a termination message.
 
+#### 5.00
+
+Added a UI and some calculations.
+The results of our system test across 2 computers with significant message traffic are reflected in the following results:
+Arrival Sensor Interface: Period - 50, Response Time - 10.129ms
+Elevator Buttons Interface: Period - 100, Response Time - 10.143ms
+Floor Buttons Interface: Period - 200, Response Time - 10.379ms
+To make a fair RMS viability analysis we can generously inflate these average response times...
+Arrival Sensor Interface: Period - 50, Response Time - 20ms
+Elevator Buttons Interface: Period - 100, Response Time - 20ms
+Floor Buttons Interface: Period - 200, Response Time - 20ms
+Using the standard RMS viability inequality for 3 processes:
+(20/50) + (20/100) + (20/200) <= 0.78
+0.70 < 0.78 ... therefore our system is certainly schedulable by RMS to meet its deadlines consistently
 
 ## Diagrams
 
@@ -82,3 +96,9 @@ The most up to date version of our diagrams can be found at..
 - Vikram Bombhi: Scheduler timings & statistics
 - Jacky Chiu: Scheduler refactor
 - Connor Poland: Diagrams & scaling up the amount of elevators
+
+##### Contributions - Iteration 5
+- Kirin Rastogi: UML
+- Vikram Bombhi: UML
+- Jacky Chiu: gui for floor and elevator subsystems, scheduler refactor
+- Connor Poland: Calculations
